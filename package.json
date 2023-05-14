@@ -5,6 +5,10 @@
   "scripts": {
     "start": "cross-env nodemon --watch 'src/' -e ts --exec 'ts-node' ./bin/www.ts"
   },
+  "env": {
+    "SERVER_URL": "",
+    "PORT": 3000
+  },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.3",
     "@types/debug": "^4.1.7",
