@@ -5,7 +5,7 @@ import path from 'path';
 import createDatabase from './mongodb';
 import { userRouter, viewsRouter } from './routes';
 
-export const db = createDatabase('MgChat', ['USERS']);
+export const db = createDatabase('MgChat', ['data']);
 
 const app = express();
 

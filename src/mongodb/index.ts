@@ -3,7 +3,7 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 import pkg from '../../package.json';
 
 const { Mongo } = pkg.env;
-const URI = Mongo.LOCAL_URI;
+const URI = Mongo.SERVER_URL;
 
 function runMongoClient(name: string) {
   // Create a MongoClient with a MongoClientOptions object to set the Stable API version

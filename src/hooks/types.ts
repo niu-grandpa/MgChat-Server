@@ -5,4 +5,5 @@ export type CrudOptions = {
   req: Request;
   res: Response;
   table: DbTables;
+  noSend?: boolean;
 };
