@@ -6,16 +6,23 @@
 
 import debug from 'debug';
 import http from 'http';
+import path from 'path';
 import app from '../src/app';
 
 const _debug = debug('server:server');
-const hostname = 'localhost';
+const pkg = require(path.join(__dirname, '../package.json'));
 
 /**
- * Get port from environment and store in Express.
+ * Get hostname from package.json.
  */
 
-const port = normalizePort(process.env.PORT || '3000');
+const hostname = pkg.env.TEST_URL;
+app.set('hostname', hostname);
+/**
+ * Get port from package.json.
+ */
+
+const port = normalizePort(pkg.env.PORT);
 app.set('port', port);
 
 /**
