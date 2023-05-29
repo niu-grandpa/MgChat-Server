@@ -1,4 +1,5 @@
 import { db } from '../app';
+import { DB_TABLE_KEY } from '../mongodb';
 import { ClientQueryFields } from '../types';
 import { wrapperResult } from '../utils';
 import { CrudOptions } from './types';
@@ -8,11 +9,16 @@ import { CrudOptions } from './types';
  */
 export async function useRead({ req, res, table, noSend }: CrudOptions) {
   const params = req.body as ClientQueryFields;
-  const data = await db.collection(table).findOne(params);
+  const doc = {};
+  doc[table!] = params;
+  const data = await db.collection('data').findOne({ key: DB_TABLE_KEY }, doc);
   if (noSend) {
     return data;
   }
   res.status(200);
-  // @ts-ignore
-  res.send(wrapperResult(data, 'success'));
+  if (data === null) {
+    res.send(wrapperResult(data, ''));
+  } else {
+    res.send(wrapperResult(data, 'success'));
+  }
 }

@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { DbTables } from '../types';
+import { TableProps } from '../types';
 
 export type CrudOptions = {
   req: Request;
   res: Response;
-  table: DbTables;
+  table?: TableProps;
   noSend?: boolean;
+  newData?: any;
+  filter?: any;
 };
