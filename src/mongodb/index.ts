@@ -1,15 +1,13 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
-import pkg from '../../package.json';
 import { DbTables } from '../types';
+import MyMongoDbURI from './uri';
 
-const { Mongo } = pkg.env;
-const URI = Mongo.SERVER_URL;
 /**用于选取数据库表的key值 */
 export const DB_TABLE_KEY = 'admin';
 
 function runMongoClient(name: string) {
   // Create a MongoClient with a MongoClientOptions object to set the Stable API version
-  const client = new MongoClient(URI, {
+  const client = new MongoClient(MyMongoDbURI, {
     serverApi: {
       version: ServerApiVersion.v1,
       strict: true,
@@ -17,7 +15,7 @@ function runMongoClient(name: string) {
     },
   });
 
-  console.log(`[Mongo] ${name} db running at ${URI}`);
+  console.log(`[Mongo] ${name} db running at ${MyMongoDbURI}`);
   return client.db(name);
 }
 

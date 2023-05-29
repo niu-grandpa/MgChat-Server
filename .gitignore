@@ -37,3 +37,5 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 dist-electron
+
+/src/mongodb/uri.ts

@@ -8,11 +8,7 @@
   "env": {
     "TEST_URL": "127.0.0.1",
     "SERVER_URL": "",
-    "PORT": "3000",
-    "Mongo": {
-      "LOCAL_URI": "mongodb://localhost:27017/",
-      "SERVER_URL": "mongodb+srv://MISAKI:mgdb2761929@mgchat.2avkrnl.mongodb.net/?retryWrites=true&w=majority"
-    }
+    "PORT": "3000"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.3",
