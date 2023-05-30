@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { useCheckParams } from '../../hooks';
-import { ClientQueryFields } from '../../types';
+import { useCheckParams } from '../../../hooks';
+import { ClientQueryFields } from '../../../types';
 
 export const crudHandler = ({
   req,

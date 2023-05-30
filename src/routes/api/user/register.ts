@@ -1,9 +1,9 @@
 import express from 'express';
-import { crudHandler } from '..';
-import { useCreate } from '../../hooks';
-import { useGenerateUid } from '../../hooks/useGenerateUid';
-import { UserInfo } from '../../types';
-import { registerFields } from '../fields';
+import { crudHandler } from '.';
+import { useCreate } from '../../../hooks';
+import { useGenerateUid } from '../../../hooks/useGenerateUid';
+import { UserInfo, UserStatus } from '../../../types';
+import { registerFields } from '../../fields';
 
 const registerApi = express.Router();
 
@@ -22,6 +22,7 @@ registerApi.post('/register', (req, res) =>
 );
 
 const initNewUserData = async (data: UserInfo) => {
+  data.id = '';
   data.icon = '';
   data.city = '';
   data.age = 0;
@@ -33,6 +34,11 @@ const initNewUserData = async (data: UserInfo) => {
   data.activeTime = 0;
   data.friends = [];
   data.groups = [];
+  data.loginTime = 0;
+  data.createTime = 0;
+  data.password = '';
+  data.phoneNumber = '';
+  data.status = UserStatus.OFFLINE;
   data.account = await useGenerateUid();
 };
 

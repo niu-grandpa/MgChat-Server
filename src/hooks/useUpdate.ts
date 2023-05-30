@@ -1,5 +1,6 @@
 import { db } from '../app';
 import { DB_TABLE_NAME } from '../mongodb';
+import { ResponseCode } from '../types';
 import { wrapperResult } from '../utils';
 import { CrudOptions } from './types';
 
@@ -24,8 +25,6 @@ export async function useUpdate({
   );
   if (!noSend) {
     res.status(200);
-    res.send(wrapperResult(null, 'success'));
+    res.send(wrapperResult(null, ResponseCode.SUCCESS));
   }
 }
-
-// useUpdate({data: {count: 1}})

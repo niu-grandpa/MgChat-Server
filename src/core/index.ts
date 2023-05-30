@@ -10,7 +10,14 @@ for (let i = 1; i <= maxLevel; i++) {
   if (i >= 8) levelDays[i] = 21;
 }
 
-export function settlementUserLevelAndCredit(data: UserInfo) {
+/**
+ * 结算用户等级和积分
+ * @param data
+ * @returns
+ */
+export function settlementUserLevelAndCredit(
+  data: UserInfo & { logoutTime: number }
+) {
   const { loginTime, logoutTime, level } = data;
 
   // 当前活跃时间由登出时间减去登录时间得到，单位（h）
