@@ -1,2 +1,2 @@
-export { userRouter } from './user';
+export * from './api';
 export { viewsRouter } from './views';

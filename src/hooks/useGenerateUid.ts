@@ -1,5 +1,5 @@
 import { db } from '../app';
-import { DB_TABLE_KEY } from '../mongodb';
+import { DB_TABLE_NAME } from '../mongodb';
 import { DbTableSructure } from '../types';
 
 /**
@@ -13,7 +13,7 @@ export async function useGenerateUid() {
   // 取末尾id自增
   const newUid = (Number(allAccount[allAccount.length - 1]) + 1).toString();
   await table.updateOne(
-    { key: DB_TABLE_KEY },
+    { key: DB_TABLE_NAME },
     { $push: { allAccount: newUid } }
   );
   return newUid;

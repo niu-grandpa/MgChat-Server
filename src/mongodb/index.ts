@@ -1,9 +1,6 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 import { DbTables } from '../types';
-import MyMongoDbURI from './uri';
-
-/**用于选取数据库表的key值 */
-export const DB_TABLE_KEY = 'admin';
+import { DB_TABLE_NAME, MyMongoDbURI } from './uri';
 
 function runMongoClient(name: string) {
   // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -19,10 +16,11 @@ function runMongoClient(name: string) {
   return client.db(name);
 }
 
-function createDatabase(database: string, tables: DbTables) {
+function createDatabase(database: string, table: DbTables) {
   const db = runMongoClient(database);
-  db.collection(tables);
+  db.collection(table);
   return db;
 }
 
+export { DB_TABLE_NAME };
 export default createDatabase;

@@ -1,5 +1,5 @@
 import { db } from '../app';
-import { DB_TABLE_KEY } from '../mongodb';
+import { DB_TABLE_NAME } from '../mongodb';
 import { wrapperResult } from '../utils';
 import { CrudOptions } from './types';
 
@@ -8,16 +8,16 @@ import { CrudOptions } from './types';
  */
 export async function useUpdate({
   res,
-  table,
   filter,
   newData,
   noSend,
+  tableProps,
 }: CrudOptions) {
   const doc = {};
-  doc[table!] = { $elemMatch: filter };
+  doc[tableProps!] = { $elemMatch: filter };
   await db.collection('data').updateOne(
     {
-      key: DB_TABLE_KEY,
+      key: DB_TABLE_NAME,
       ...doc,
     },
     { $set: newData }

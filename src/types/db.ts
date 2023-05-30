@@ -15,11 +15,13 @@ export interface UserInfo {
   icon: string;
   city: string;
   age: number;
-  count: number;
   level: number;
   gender: number;
   credit: number;
+  loginTime: number;
+  logoutTime: number;
   privilege: number;
+  upgradeDays: number;
   nickname: string;
   account: string;
   password: string;
