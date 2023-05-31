@@ -19,5 +19,3 @@ export interface ResponseStatus<T> {
   msg: string;
   data: T;
 }
-
-export type TableProps = 'allUsers' | 'allGroups' | 'messageHistory';

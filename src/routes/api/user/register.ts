@@ -1,45 +1,51 @@
 import express from 'express';
-import { crudHandler } from '.';
-import { useCreate } from '../../../hooks';
-import { useGenerateUid } from '../../../hooks/useGenerateUid';
-import { UserInfo, UserStatus } from '../../../types';
-import { registerFields } from '../../fields';
+import { db } from '../../../app';
+import { useApiHandler, useGenerateUid } from '../../../hooks';
+import { DbUser, UserGender, UserStatus } from '../../../types';
 
 const registerApi = express.Router();
 
-registerApi.post('/register', (req, res) =>
-  crudHandler({
-    req,
-    res,
-    fields: registerFields,
-    next: () => {
-      // 初始化新用户数据
-      initNewUserData(req.body).then(() =>
-        useCreate({ req, res, tableProps: 'allUsers' })
-      );
-    },
-  })
-);
+const initUserData = () =>
+  ({
+    icon: '',
+    city: '',
+    age: 0,
+    status: UserStatus.OFFLINE,
+    level: 0,
+    gender: UserGender.NONE,
+    credit: 0,
+    loginTime: 0,
+    privilege: 0,
+    upgradeDays: 0,
+    nickname: '',
+    account: '',
+    password: '',
+    phoneNumber: '',
+    friends: [],
+    groups: [],
+    activeTime: 0,
+    createTime: 0,
+  } as DbUser.UserInfo);
 
-const initNewUserData = async (data: UserInfo) => {
-  data.id = '';
-  data.icon = '';
-  data.city = '';
-  data.age = 0;
-  data.level = 1;
-  data.credit = 0;
-  data.gender = 2;
-  data.privilege = 0;
-  data.upgradeDays = 0;
-  data.activeTime = 0;
-  data.friends = [];
-  data.groups = [];
-  data.loginTime = 0;
-  data.createTime = 0;
-  data.password = '';
-  data.phoneNumber = '';
-  data.status = UserStatus.OFFLINE;
-  data.account = await useGenerateUid();
-};
+registerApi.post('/register', (req, res) => {
+  useApiHandler({
+    response: res,
+    required: {
+      target: req.body,
+      check: [
+        {
+          type: 'String',
+          fields: ['nickname', 'phoneNumber', 'code', 'password'],
+        },
+      ],
+    },
+    middleware: [
+      async () => {
+        const key = await useGenerateUid(db);
+        res.send(key);
+      },
+    ],
+  });
+});
 
 export { registerApi };

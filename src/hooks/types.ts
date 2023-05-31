@@ -1,11 +1,9 @@
-import { Request, Response } from 'express';
-import { TableProps } from '../types';
-
-export type CrudOptions = {
-  req: Request;
-  res: Response;
-  noSend?: boolean;
-  newData?: any;
-  filter?: any;
-  tableProps?: TableProps;
-};
+import { Response } from 'express';
+export interface UseApiHandler {
+  response: Response;
+  required?: {
+    target: object;
+    check: { type: string; fields: string[] }[];
+  };
+  middleware: Function[];
+}

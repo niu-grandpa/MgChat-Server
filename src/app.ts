@@ -12,8 +12,7 @@ import {
   viewsRouter,
 } from './routes';
 
-export const db = createDatabase('MgChat', 'data');
-
+const db = createDatabase();
 const app = express();
 
 app
@@ -48,4 +47,5 @@ app
   .use('/api/user', forgetPwApi)
   .use('/api/user', infoApi);
 
+export { db };
 export default app;

@@ -1,56 +1,43 @@
-/**数据库表名 */
-export type DbTables = 'data';
+import { ObjectId } from 'mongodb';
+import { UserStatus } from './enum';
 
-/**数据库表结构 */
-export interface DbTableSructure {
-  allUsers: UserInfo[];
-  allAccount: string[];
-  allGroups: GroupInfo[];
-  messageHistory: MessageLog;
+export declare namespace DbUser {
+  interface UserInfo {
+    icon: string;
+    city: string;
+    age: number;
+    status: UserStatus;
+    level: number;
+    gender: number;
+    credit: number;
+    loginTime: number;
+    privilege: number;
+    upgradeDays: number;
+    nickname: string;
+    account: string;
+    password: string;
+    phoneNumber: string;
+    friends: UserInfo[];
+    groups: DbGroup.GroupInfo[];
+    activeTime: number;
+    createTime: number;
+  }
 }
 
-/**用户信息 */
-export interface UserInfo {
-  id: string;
-  icon: string;
-  city: string;
-  age: number;
-  status: number;
-  level: number;
-  gender: number;
-  credit: number;
-  loginTime: number;
-  privilege: number;
-  upgradeDays: number;
-  nickname: string;
-  account: string;
-  password: string;
-  phoneNumber: string;
-  friends: UserInfo[];
-  groups: GroupInfo[];
-  activeTime: number;
-  createTime: number;
+export declare namespace DbGroup {
+  interface GroupInfo {
+    gid: number;
+    name: string;
+    owner: DbUser.UserInfo;
+    member: DbUser.UserInfo[];
+    createTime: number;
+  }
 }
 
-/**群组信息 */
-export interface GroupInfo {
-  gid: number;
-  name: string;
-  owner: UserInfo;
-  member: UserInfo[];
-  createTime: number;
-}
+export declare namespace DbMessage {}
 
-/**消息记录 */
-export type MessageLog = Record<
-  string,
-  Record<
-    string,
-    Array<{
-      role: 'me' | 'other';
-      content: string;
-      images: string[];
-      time: number;
-    }>
-  >
->;
+export type DbAccount = {
+  _id: ObjectId;
+  uid: string[];
+  key: 'allUids';
+};

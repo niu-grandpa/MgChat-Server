@@ -1,5 +1,12 @@
+export const enum DbTable {
+  USER = 'user',
+  GROUP = 'group',
+  MESSAGE = 'message',
+  ACCOUNT = 'account',
+}
+
 /** 接口调用后的状态码 */
-export enum ResponseCode {
+export const enum ResponseCode {
   SUCCESS = 0,
   FAIL = 1,
   EXPIRED = 2,
@@ -17,11 +24,19 @@ export const ResponseMsg = {
   5: '密码错误',
 };
 
-export enum UserStatus {
+export const enum UserStatus {
   ONLINE = 0,
   OFFLINE = 1,
   ACTIVE = 2,
   BUSY = 3,
   INVISIBILITY = 4,
   DO_NOT_DISTURB = 5,
+}
+
+export const enum UserPrivilege {}
+
+export const enum UserGender {
+  MAN = 0,
+  WOMAN = 1,
+  NONE = 3,
 }
