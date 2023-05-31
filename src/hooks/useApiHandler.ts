@@ -11,7 +11,7 @@ async function useApiHandler({
   middleware,
 }: UseApiHandler) {
   if (required !== undefined) {
-    const { target, check } = required;
+    const { target, check, must } = required;
     const map: Record<string, string[]> = {};
 
     check.forEach(({ type, fields }) => {
@@ -19,10 +19,23 @@ async function useApiHandler({
     });
 
     let pass = true;
+
+    // 检查字段是否缺失
+    if (must && must.length) {
+      for (const key of must) {
+        if (!(key in target)) {
+          pass = false;
+          response.status(500);
+          response.send(`缺少参数 "${key}", 但是必填参数项有 "${must}"`);
+          break;
+        }
+      }
+      if (!pass) return;
+    }
+
     // 检查字段类型是否正确
-    Object.keys(map).forEach(type => {
-      const fields = map[type];
-      for (const field of fields) {
+    for (const type in map) {
+      for (const field of map[type]) {
         if (target[field] && typeof target[field] !== type.toLowerCase()) {
           pass = false;
           response.status(500);
@@ -30,9 +43,8 @@ async function useApiHandler({
           break;
         }
       }
-    });
-
-    if (!pass) return;
+      if (!pass) return;
+    }
 
     // 执行函数中间件
     try {

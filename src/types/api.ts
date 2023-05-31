@@ -8,6 +8,12 @@ export interface ClientQueryFields {
   code: number;
   phoneToken: string;
   status: UserStatus;
+  timeInfo: {
+    loginTime: number;
+    logoutTime: number;
+    activeTime: number;
+    createTime: number;
+  };
   loginTime: number;
   logoutTime: number;
   phoneNumber: number;

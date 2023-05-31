@@ -13,12 +13,14 @@ const loginApi = express.Router();
 const { read, update } = useDbCrud();
 
 loginApi.post('/login', async (request, response) => {
-  const { account, password, loginTime } = request.body as ClientQueryFields;
+  const { account, password } = request.body as ClientQueryFields;
+  const fields = ['account', 'password'];
   useApiHandler({
     response,
     required: {
       target: request.body,
-      check: [{ type: 'String', fields: ['account', 'password'] }],
+      must: fields,
+      check: [{ type: 'String', fields }],
     },
     middleware: [
       async () => {

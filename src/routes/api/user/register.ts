@@ -28,16 +28,13 @@ const initUserData = () => ({
 });
 
 registerApi.post('/register', (request, response) => {
+  const fields = ['nickname', 'phoneNumber', 'code', 'password'];
   useApiHandler({
     response,
     required: {
       target: request.body,
-      check: [
-        {
-          type: 'String',
-          fields: ['nickname', 'phoneNumber', 'code', 'password'],
-        },
-      ],
+      must: fields,
+      check: [{ type: 'String', fields }],
     },
     middleware: [
       async () => {
