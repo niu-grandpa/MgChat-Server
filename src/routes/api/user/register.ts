@@ -1,37 +1,37 @@
 import express from 'express';
 import { db } from '../../../app';
-import { useApiHandler, useGenerateUid } from '../../../hooks';
-import { DbUser, UserGender, UserStatus } from '../../../types';
+import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
+import { DbTable, UserGender, UserStatus } from '../../../types';
 
 const registerApi = express.Router();
 
-const initUserData = () =>
-  ({
-    icon: '',
-    city: '',
-    age: 0,
-    status: UserStatus.OFFLINE,
-    level: 0,
-    gender: UserGender.NONE,
-    credit: 0,
-    loginTime: 0,
-    privilege: 0,
-    upgradeDays: 0,
-    nickname: '',
-    account: '',
-    password: '',
-    phoneNumber: '',
-    friends: [],
-    groups: [],
-    activeTime: 0,
-    createTime: 0,
-  } as DbUser.UserInfo);
+const { create } = useDbCrud();
 
-registerApi.post('/register', (req, res) => {
+const initUserData = () => ({
+  icon: '',
+  city: '',
+  age: 0,
+  status: UserStatus.OFFLINE,
+  level: 0,
+  gender: UserGender.NONE,
+  credit: 0,
+  privilege: 0,
+  upgradeDays: 0,
+  friends: [],
+  groups: [],
+  timeInfo: {
+    loginTime: '',
+    logoutTime: '',
+    activeTime: 0,
+    createTime: Date.now(),
+  },
+});
+
+registerApi.post('/register', (request, response) => {
   useApiHandler({
-    response: res,
+    response,
     required: {
-      target: req.body,
+      target: request.body,
       check: [
         {
           type: 'String',
@@ -41,8 +41,17 @@ registerApi.post('/register', (req, res) => {
     },
     middleware: [
       async () => {
-        const key = await useGenerateUid(db);
-        res.send(key);
+        await create({
+          table: DbTable.USER,
+          request,
+          response,
+          filter: { phoneNumber: request.body.phoneNumber },
+          newData: {
+            ...initUserData(),
+            ...request.body,
+            account: await useGenerateUid(db),
+          },
+        });
       },
     ],
   });

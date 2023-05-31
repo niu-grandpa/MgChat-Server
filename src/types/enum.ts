@@ -12,7 +12,9 @@ export const enum ResponseCode {
   EXPIRED = 2,
   EXISTED = 3,
   NONE = 4,
-  WRONG_PWD = 5,
+  NO_ACCOUNT = 5,
+  WRONG_PWD = 6,
+  REPEAT_LOGIN = 7,
 }
 
 export const ResponseMsg = {
@@ -21,7 +23,9 @@ export const ResponseMsg = {
   2: '已过期',
   3: '数据已存在',
   4: '未查询到相关数据',
-  5: '密码错误',
+  5: '用户不存在或账号错误',
+  6: '密码错误',
+  7: '当前用户已在线，无法重复登录',
 };
 
 export const enum UserStatus {

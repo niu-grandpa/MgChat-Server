@@ -1,12 +1,15 @@
 import dayjs from 'dayjs';
-import { UserInfo } from '../types';
+import { DbUser } from '../types';
 
 const levelDays: Record<string, number> = {};
 const maxLevel = 12;
 
 for (let i = 1; i <= maxLevel; i++) {
+  // 1-3等级所需升级天数: 7
   if (i <= 3) levelDays[i] = 7;
+  // 4-7等级所需升级天数: 14
   if (i >= 4 && i <= 7) levelDays[i] = 14;
+  // 8-12等级所需升级天数: 21
   if (i >= 8) levelDays[i] = 21;
 }
 
@@ -15,32 +18,25 @@ for (let i = 1; i <= maxLevel; i++) {
  * @param data
  * @returns
  */
-export function settlementUserLevelAndCredit(
-  data: UserInfo & { logoutTime: number }
-) {
-  const { loginTime, logoutTime, level } = data;
+export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
+  const { level, timeInfo } = data;
+  const { loginTime, logoutTime } = timeInfo;
 
-  // 当前活跃时间由登出时间减去登录时间得到，单位（h）
+  // 当前活跃时间由下线时间减去登录时间得到，单位（h）
   let currentActiveHours = dayjs(logoutTime).diff(dayjs(loginTime), 'h');
   let currentActiveMinutes = dayjs(logoutTime).diff(dayjs(loginTime), 'm');
-  let currentActiveSeconds = dayjs(logoutTime).diff(dayjs(loginTime), 's');
 
   // 当前活跃时间每达到整的1个小时阶段，每次加50积分
   if (currentActiveHours >= 1) {
     let t = currentActiveHours;
     while (t--) data.credit += 50;
-  } else {
+  } else if (currentActiveMinutes > 0) {
     // 登录一个小时之内的按分钟转成小时
-    if (currentActiveMinutes > 0) {
-      currentActiveHours = Number((currentActiveMinutes / 60).toFixed(3));
-    } else {
-      // 登录不到一分钟按秒转成小时
-      currentActiveHours = Number((currentActiveSeconds / 60 / 60).toFixed(3));
-    }
+    currentActiveHours = Number((currentActiveMinutes / 60).toFixed(1));
   }
 
   // 更新总活跃时间
-  data.activeTime += currentActiveHours;
+  data.timeInfo.activeTime += currentActiveHours;
 
   if (level < maxLevel) {
     // 获得升级天数的途径是通过累计每次登录的活跃小时数，并转成天数
@@ -58,7 +54,7 @@ export function settlementUserLevelAndCredit(
   }
 
   // 当前活跃时间大于1小时+10积分
-  while (currentActiveHours--) {
+  while (currentActiveHours > 0 && currentActiveHours--) {
     data.credit += 10;
   }
 

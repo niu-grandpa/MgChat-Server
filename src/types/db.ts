@@ -10,7 +10,6 @@ export declare namespace DbUser {
     level: number;
     gender: number;
     credit: number;
-    loginTime: number;
     privilege: number;
     upgradeDays: number;
     nickname: string;
@@ -19,8 +18,12 @@ export declare namespace DbUser {
     phoneNumber: string;
     friends: UserInfo[];
     groups: DbGroup.GroupInfo[];
-    activeTime: number;
-    createTime: number;
+    timeInfo: {
+      loginTime: number;
+      logoutTime: number;
+      activeTime: number;
+      createTime: number;
+    };
   }
 }
 
