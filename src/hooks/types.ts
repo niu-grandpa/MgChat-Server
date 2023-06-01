@@ -11,7 +11,7 @@ export interface UseApiHandler {
     target: object;
     /**必填字段 */
     must?: string[];
-    check: { type: string; fields: string[] }[];
+    check?: { type: string; fields: string[] }[];
   };
   /**中间件函数，按顺序执行。如果返回其中一个false则会中断执行 */
   middleware: Function[];
@@ -22,6 +22,6 @@ export interface UseCrud {
   response?: Response;
   request?: Request;
   filter: Filter<Document>;
-  update?: UpdateFilter<Document>;
+  update?: UpdateFilter<unknown>;
   newData?: Document;
 }

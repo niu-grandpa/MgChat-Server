@@ -2,10 +2,8 @@ import express from 'express';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { DbTable } from '../../../types';
 
-const logoutApi = express.Router();
-const { read } = useDbCrud();
-
 const infoApi = express.Router();
+const { read } = useDbCrud();
 
 infoApi.get('/info', async (request, response) => {
   useApiHandler({

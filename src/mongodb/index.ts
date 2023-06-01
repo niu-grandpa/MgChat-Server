@@ -11,7 +11,7 @@ function runMongoClient(name: string) {
     },
   });
 
-  console.log(`[Mongo] ${name} db running at ${MyMongoDbURI}`);
+  console.log(`Mongodb connecting to ${MyMongoDbURI}`);
   return client.db(name);
 }
 

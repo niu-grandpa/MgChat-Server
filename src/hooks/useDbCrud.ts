@@ -3,6 +3,9 @@ import { ResponseCode } from '../types';
 import { wrapperResult } from '../utils';
 import { UseCrud } from './types';
 
+/**
+ * 封装数据库增删改查操作，同时也赋予其处理接口对客户端的回复能力
+ */
 function useDbCrud() {
   const getTable = (name: string) => db.collection(name);
 
@@ -28,8 +31,10 @@ function useDbCrud() {
     }
     const colect = getTable(table);
     await colect.insertOne(newData!);
-    response?.status(200);
-    response?.send(wrapperResult(newData, ResponseCode.SUCCESS));
+    if (response) {
+      response.status(200);
+      response.send(wrapperResult(newData, ResponseCode.SUCCESS));
+    }
   };
 
   const onUpdate = async ({ table, filter, update, response }: UseCrud) => {
@@ -39,11 +44,17 @@ function useDbCrud() {
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };
 
-  const onDelete = () => {
-    //
+  const onDelete = async ({ table, filter, response }: UseCrud) => {
+    const colect = getTable(table);
+    await colect.deleteOne(filter);
+    if (response) {
+      response.send(200);
+      response.send(wrapperResult(null, ResponseCode.SUCCESS));
+    }
   };
 
   return {
+    /** 当数据已存在时则不会再次创建，否则新建数据 */
     create: onCreate,
     read: onRead,
     update: onUpdate,

@@ -8,6 +8,7 @@ import {
   infoApi,
   loginApi,
   logoutApi,
+  messageApi,
   registerApi,
   viewsRouter,
 } from './routes';
@@ -41,11 +42,14 @@ app
   })
 
   .use('/', viewsRouter)
+  // 用户接口
   .use('/api/user', loginApi)
   .use('/api/user', logoutApi)
   .use('/api/user', registerApi)
   .use('/api/user', forgetPwApi)
-  .use('/api/user', infoApi);
+  .use('/api/user', infoApi)
+  // 消息保存接口
+  .use('/api/message', messageApi);
 
 export { db };
 export default app;

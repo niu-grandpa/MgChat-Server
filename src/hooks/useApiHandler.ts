@@ -3,7 +3,7 @@ import { UseApiHandler } from './types';
 /**
  * useApiHandler
  *
- * 检查客户端调用的接口传递的参数字段是否缺失与类型是否正确，并提供中间件功能
+ * 检查客户端传递的参数字段是否缺失与类型是否正确，并提供中间件功能
  */
 async function useApiHandler({
   response,
@@ -14,7 +14,7 @@ async function useApiHandler({
     const { target, check, must } = required;
     const map: Record<string, string[]> = {};
 
-    check.forEach(({ type, fields }) => {
+    check?.forEach(({ type, fields }) => {
       map[type] = fields;
     });
 

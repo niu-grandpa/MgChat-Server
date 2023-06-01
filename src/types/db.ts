@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { UserStatus } from './enum';
+import { MessageRole, UserStatus } from './enum';
 
 export declare namespace DbUser {
   interface UserInfo {
@@ -37,7 +37,24 @@ export declare namespace DbGroup {
   }
 }
 
-export declare namespace DbMessage {}
+export declare namespace DbMessage {
+  type HistoryMessageType = {
+    cid: string;
+    role: MessageRole;
+    content: string;
+    images: string;
+    createTime: number;
+  };
+  type RecordType = {
+    who: string;
+    createTime: number;
+    message: HistoryMessageType[];
+  };
+  interface Record {
+    account: string;
+    record: RecordType[];
+  }
+}
 
 export type DbAccount = {
   _id: ObjectId;

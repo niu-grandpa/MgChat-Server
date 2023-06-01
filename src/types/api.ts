@@ -1,22 +1,20 @@
+import { DbMessage, DbUser } from './db';
 import { ResponseCode, UserStatus } from './enum';
 
-/** 展示客户端可通过接口查询的所有字段 */
+/** 展示客户端传递给api接口的所有参数字段 */
 export interface ClientQueryFields {
   id: string;
   account: string;
   password: string;
-  code: number;
+  code: string;
   phoneToken: string;
   status: UserStatus;
-  timeInfo: {
-    loginTime: number;
-    logoutTime: number;
-    activeTime: number;
-    createTime: number;
-  };
-  loginTime: number;
-  logoutTime: number;
   phoneNumber: number;
+  timeInfo: DbUser.UserInfo['timeInfo'];
+  recordMsg: {
+    who: string;
+    data: DbMessage.HistoryMessageType;
+  };
 }
 
 /** 接口请求结果 */

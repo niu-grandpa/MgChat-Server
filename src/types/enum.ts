@@ -44,3 +44,13 @@ export const enum UserGender {
   WOMAN = 1,
   NONE = 3,
 }
+
+/**
+ * 聊天的角色方
+ */
+export const enum MessageRole {
+  /**我 */
+  ME = 0,
+  /**对方 */
+  OTHER = 1,
+}
