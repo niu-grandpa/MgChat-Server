@@ -89,4 +89,4 @@ friendApi
    */
   .delete('/remove-friend', async (request, response) => {});
 
-export { friendApi };
+export default friendApi;

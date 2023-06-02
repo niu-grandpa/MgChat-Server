@@ -1,4 +1,4 @@
-import { db } from '../app';
+import db from '../mongodb';
 import { ResponseCode } from '../types';
 import { wrapperResult } from '../utils';
 import { UseCrud } from './types';

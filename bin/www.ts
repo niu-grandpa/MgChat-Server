@@ -8,6 +8,7 @@ import debug from 'debug';
 import http from 'http';
 import path from 'path';
 import app from '../src/app';
+import createSocketIo from '../src/socket';
 
 const _debug = debug('server:server');
 const pkg = require(path.join(__dirname, '../package.json'));
@@ -30,6 +31,12 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
+
+/**
+ * Create Socket server.
+ */
+
+createSocketIo(server);
 
 /**
  * Listen on provided port, on all network interfaces.

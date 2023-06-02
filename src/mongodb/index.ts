@@ -44,5 +44,7 @@ function createDatabase() {
   return db;
 }
 
+const db = createDatabase();
+
 export { DB_TABLE_NAME };
-export default createDatabase;
+export default db;

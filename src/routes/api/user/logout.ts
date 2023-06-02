@@ -6,6 +6,10 @@ import { settlementUserLevelAndCredit } from './../../../core/index';
 const logoutApi = express.Router();
 const { read, update } = useDbCrud();
 
+/**
+ * 退出登录
+ * 无论登录方式是通过账号密码还是手机，最终退出登录都要用到账号去查询用户表
+ */
 logoutApi.post('/logout', async (request, response) => {
   const common = {
     table: DbTable.USER,
@@ -27,4 +31,4 @@ logoutApi.post('/logout', async (request, response) => {
   });
 });
 
-export { logoutApi };
+export default logoutApi;

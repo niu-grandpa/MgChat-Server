@@ -25,4 +25,4 @@ infoApi.get('/info', async (request, response) => {
   });
 });
 
-export { infoApi };
+export default infoApi;

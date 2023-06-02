@@ -1,5 +1,4 @@
 import express from 'express';
-import { db } from '../../../app';
 import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
 import { DbTable, UserGender, UserStatus } from '../../../types';
 
@@ -46,7 +45,7 @@ registerApi.post('/register', (request, response) => {
           newData: {
             ...initUserData(),
             ...request.body,
-            account: await useGenerateUid(db),
+            account: await useGenerateUid(),
           },
         });
       },
@@ -54,4 +53,4 @@ registerApi.post('/register', (request, response) => {
   });
 });
 
-export { registerApi };
+export default registerApi;

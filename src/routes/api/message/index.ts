@@ -9,10 +9,10 @@ import {
 } from '../../../types';
 import { wrapperResult } from '../../../utils';
 
-const messageApi = express.Router();
-const { read, create, update, deleteOne } = useDbCrud();
+const MessageApi = express.Router();
+const { read, create, update } = useDbCrud();
 
-messageApi
+MessageApi
   /** 查询某用户与其他人的所有聊天记录 */
   .get('/get', async (request, response) => {
     await read({
@@ -111,4 +111,4 @@ messageApi
     });
   });
 
-export { messageApi };
+export default MessageApi;

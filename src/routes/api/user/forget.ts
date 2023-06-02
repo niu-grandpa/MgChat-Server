@@ -43,4 +43,4 @@ forgetPwApi.post('/forget', (request, response) => {
   });
 });
 
-export { forgetPwApi };
+export default forgetPwApi;
