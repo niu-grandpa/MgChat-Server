@@ -53,7 +53,7 @@ async function useApiHandler({
         if ((await fn()) === false) break;
       }
     } catch (e) {
-      console.log(`[useApiHandler] error: ${e}`);
+      console.error(`[useApiHandler] error: ${e}`);
     }
   }
 }

@@ -24,4 +24,5 @@ export interface UseCrud {
   filter: Filter<Document>;
   update?: UpdateFilter<unknown>;
   newData?: Document;
+  options?: any;
 }

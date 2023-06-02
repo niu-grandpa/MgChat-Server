@@ -7,14 +7,14 @@ export interface ClientQueryFields {
   account: string;
   password: string;
   code: string;
+  who: string;
+  cid: string;
   phoneToken: string;
   status: UserStatus;
   phoneNumber: number;
+  withdraw: boolean;
   timeInfo: DbUser.UserInfo['timeInfo'];
-  recordMsg: {
-    who: string;
-    data: DbMessage.HistoryMessageType;
-  };
+  recordMsg: DbMessage.HistoryMessageType;
 }
 
 /** 接口请求结果 */

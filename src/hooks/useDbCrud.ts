@@ -37,20 +37,24 @@ function useDbCrud() {
     }
   };
 
-  const onUpdate = async ({ table, filter, update, response }: UseCrud) => {
+  const onUpdate = async ({
+    table,
+    filter,
+    update,
+    response,
+    options,
+  }: UseCrud) => {
     const colect = getTable(table);
-    await colect.updateOne(filter, update!);
+    await colect.updateOne(filter, update!, options);
     response?.status(200);
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };
 
-  const onDelete = async ({ table, filter, response }: UseCrud) => {
+  const onDelete = async ({ table, filter, response, options }: UseCrud) => {
     const colect = getTable(table);
-    await colect.deleteOne(filter);
-    if (response) {
-      response.send(200);
-      response.send(wrapperResult(null, ResponseCode.SUCCESS));
-    }
+    await colect.deleteOne(filter, options || {});
+    response?.send(200);
+    response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };
 
   return {
@@ -58,7 +62,7 @@ function useDbCrud() {
     create: onCreate,
     read: onRead,
     update: onUpdate,
-    delete: onDelete,
+    deleteOne: onDelete,
   };
 }
 

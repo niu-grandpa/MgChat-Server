@@ -42,7 +42,8 @@ export declare namespace DbMessage {
     cid: string;
     role: MessageRole;
     content: string;
-    images: string;
+    image: string;
+    hidden: boolean;
     createTime: number;
   };
   type RecordType = {

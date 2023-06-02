@@ -1,10 +1,16 @@
 import express from 'express';
-import { ObjectId } from 'mongodb';
+import { Document, ObjectId } from 'mongodb';
 import { useApiHandler, useDbCrud } from '../../../hooks';
-import { ClientQueryFields, DbMessage, DbTable } from '../../../types';
+import {
+  ClientQueryFields,
+  DbMessage,
+  DbTable,
+  ResponseCode,
+} from '../../../types';
+import { wrapperResult } from '../../../utils';
 
 const messageApi = express.Router();
-const { read, create, update } = useDbCrud();
+const { read, create, update, deleteOne } = useDbCrud();
 
 messageApi
   /** 查询某用户与其他人的所有聊天记录 */
@@ -19,8 +25,7 @@ messageApi
 
   /**保存消息记录 */
   .post('/save', async (request, response) => {
-    const { account, recordMsg } = request.body as ClientQueryFields;
-    const { who, data } = recordMsg;
+    const { account, who, recordMsg } = request.body as ClientQueryFields;
     const common = {
       table: DbTable.MESSAGE,
       filter: { account },
@@ -51,33 +56,56 @@ messageApi
           // 向用户的聊天对象数据集里添加记录
           record.some(item => {
             if (item.who === who) {
-              data.cid = new ObjectId(~~(Math.random() * 10)).toString();
-              item.message.push(data);
+              recordMsg.hidden = false;
+              recordMsg.cid = new ObjectId(~~(Math.random() * 10)).toString();
+              item.message.push(recordMsg);
               return true;
             }
           });
 
-          await update({
-            ...common,
-            response,
-            update: { $set: { record } },
-          });
+          await update({ ...common, update: { $set: { record } } });
+          // 返回消息id
+          response.send(wrapperResult(recordMsg.cid, ResponseCode.SUCCESS));
         },
       ],
     });
   })
 
-  /**删除用户所有聊天记录或单删某条消息记录 */
+  /**
+   * 删除用户某条消息记录
+   * 这里并不会真正的删除该条数据，而是打上隐藏标记
+   * 除非参数withdraw为true会真正删除
+   */
   .delete('/delete', async (request, response) => {
+    const { account, cid, withdraw } = request.body as ClientQueryFields;
+    const fields = ['account', 'who', 'cid'];
+    let doc: Document;
+
     useApiHandler({
       response,
       required: {
         target: request.body,
-        must: ['account', 'who', 'cid'],
+        must: fields,
+        check: [{ type: 'String', fields }],
       },
       middleware: [
+        () => {
+          const hiddenElm = {
+            update: { $set: { 'record.$[].message.$[idx].hidden': true } },
+            options: { arrayFilters: [{ 'idx.cid': cid }] },
+          };
+          const removeElm = {
+            update: { $pull: { 'record.$[].message': { cid } } },
+          };
+          withdraw ? (doc = removeElm) : (doc = hiddenElm);
+        },
         async () => {
-          //
+          await update({
+            table: DbTable.MESSAGE,
+            response,
+            filter: { account },
+            ...doc,
+          });
         },
       ],
     });
