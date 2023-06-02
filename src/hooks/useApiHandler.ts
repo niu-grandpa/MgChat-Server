@@ -45,17 +45,23 @@ async function useApiHandler({
       }
       if (!pass) return;
     }
-
-    // 执行函数中间件
-    try {
-      while (middleware.length) {
-        const fn = middleware.shift()!;
-        if ((await fn()) === false) break;
-      }
-    } catch (e) {
-      console.error(`[useApiHandler] error: ${e}`);
-    }
   }
+
+  // 执行函数中间件
+  try {
+    while (middleware.length) {
+      const fn = middleware.shift()!;
+      if ((isAsyncFunction(fn) && (await fn()) === false) || fn() === false) {
+        break;
+      }
+    }
+  } catch (e) {
+    console.error(`[useApiHandler] error: ${e}`);
+  }
+}
+
+function isAsyncFunction(fn: any) {
+  return fn[Symbol.toStringTag] === 'AsyncFunction';
 }
 
 export { useApiHandler };

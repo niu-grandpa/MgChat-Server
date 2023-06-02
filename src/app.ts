@@ -5,6 +5,7 @@ import path from 'path';
 import createDatabase from './mongodb';
 import {
   forgetPwApi,
+  friendApi,
   infoApi,
   loginApi,
   logoutApi,
@@ -48,6 +49,8 @@ app
   .use('/api/user', registerApi)
   .use('/api/user', forgetPwApi)
   .use('/api/user', infoApi)
+  .use('/api/user', infoApi)
+  .use('/api/user', friendApi)
   // 消息保存接口
   .use('/api/message', messageApi);
 

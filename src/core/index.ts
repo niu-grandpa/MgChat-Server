@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
 import { DbUser } from '../types';
 
-const levelDays: Record<string, number> = {};
-const maxLevel = 12;
+/**用户最高等级 */
+export const userMaxLevel = 12;
 
-for (let i = 1; i <= maxLevel; i++) {
+const levelDays: Record<string, number> = {};
+
+for (let i = 1; i <= userMaxLevel; i++) {
   // 1-3等级所需升级天数: 7
   if (i <= 3) levelDays[i] = 7;
   // 4-7等级所需升级天数: 14
@@ -38,7 +40,7 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
   // 更新总活跃时间
   data.timeInfo.activeTime += currentActiveHours;
 
-  if (level < maxLevel) {
+  if (level < userMaxLevel) {
     // 获得升级天数的途径是通过累计每次登录的活跃小时数，并转成天数
     const upgradeDays = (data.upgradeDays += ~~(currentActiveHours / 24));
     const limit = levelDays[level];

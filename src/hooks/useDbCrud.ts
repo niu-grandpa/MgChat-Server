@@ -9,13 +9,19 @@ import { UseCrud } from './types';
 function useDbCrud() {
   const getTable = (name: string) => db.collection(name);
 
-  const onRead = async ({ table, filter, response, request }: UseCrud) => {
+  const onRead = async (
+    { table, filter, response }: UseCrud,
+    type?: 'findAll'
+  ) => {
     const colect = getTable(table);
-    const data = await colect.findOne(filter);
-    if (!response && !request) {
-      return data;
-    }
+    const data =
+      type === 'findAll'
+        ? await colect.find(filter).toArray()
+        : await colect.findOne(filter);
+
+    if (!response) return data;
     response?.status(200);
+
     if (data === null) {
       response?.send(wrapperResult(null, ResponseCode.NONE));
       return;

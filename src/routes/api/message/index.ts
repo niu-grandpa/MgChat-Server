@@ -76,7 +76,7 @@ messageApi
    * 这里并不会真正的删除该条数据，而是打上隐藏标记
    * 除非参数withdraw为true会真正删除
    */
-  .delete('/delete', async (request, response) => {
+  .delete('/remove', async (request, response) => {
     const { account, cid, withdraw } = request.body as ClientQueryFields;
     const fields = ['account', 'who', 'cid'];
     let doc: Document;
