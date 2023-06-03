@@ -57,8 +57,20 @@ export declare namespace DbMessage {
   }
 }
 
-export type DbAccount = {
+export interface DbAccount {
   _id: ObjectId;
   uid: string[];
   key: 'allUids';
+}
+
+export interface DbApply {
+  _id: ObjectId;
+  account: string;
+  list?: DbApplyListInfo[];
+}
+
+export type DbApplyListInfo = {
+  account: string;
+  content?: string;
+  expiredTime: number;
 };

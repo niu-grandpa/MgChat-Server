@@ -1,10 +1,11 @@
 import express from 'express';
 import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
-import { DbTable, UserGender, UserStatus } from '../../../types';
+import { DbTable, ResponseCode, UserGender, UserStatus } from '../../../types';
+import { wrapperResult } from '../../../utils';
 
 const registerApi = express.Router();
 
-const { create } = useDbCrud();
+const { read, create } = useDbCrud();
 
 const initUserData = () => ({
   icon: '',
@@ -27,7 +28,10 @@ const initUserData = () => ({
 });
 
 registerApi.post('/register', (request, response) => {
+  const { phoneNumber } = request.body;
   const fields = ['nickname', 'phoneNumber', 'code', 'password'];
+  let account = '';
+
   useApiHandler({
     response,
     required: {
@@ -37,16 +41,30 @@ registerApi.post('/register', (request, response) => {
     },
     middleware: [
       async () => {
+        if (
+          (await read({ table: DbTable.USER, filter: { phoneNumber } })) !==
+          null
+        ) {
+          response.send(wrapperResult(null, ResponseCode.EXISTED));
+          return false;
+        }
+      },
+      async () => {
+        account = await useGenerateUid();
         await create({
           table: DbTable.USER,
           request,
           response,
-          filter: { phoneNumber: request.body.phoneNumber },
-          newData: {
-            ...initUserData(),
-            ...request.body,
-            account: await useGenerateUid(),
-          },
+          filter: { phoneNumber },
+          newData: { ...initUserData(), ...request.body, account },
+        });
+      },
+      async () => {
+        // 初始化新用户的好友申请表数据
+        await create({
+          table: DbTable.APPLY,
+          filter: { account },
+          newData: { list: [] },
         });
       },
     ],

@@ -24,12 +24,9 @@ function useRegisterApi(app: Express) {
     }
   });
 
-  /**
-   * 接口注册
-   */
-
   // 批量注册user接口
   UserApi.forEach(api => app.use('/api/user', api));
+
   // 消息接口
   app.use('/api/message', MessageApi);
 }

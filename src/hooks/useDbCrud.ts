@@ -10,14 +10,14 @@ function useDbCrud() {
   const getTable = (name: string) => db.collection(name);
 
   const onRead = async (
-    { table, filter, response }: UseCrud,
+    { table, filter, response, options }: UseCrud,
     type?: 'findAll'
   ) => {
     const colect = getTable(table);
     const data =
       type === 'findAll'
-        ? await colect.find(filter).toArray()
-        : await colect.findOne(filter);
+        ? await colect.find(filter, options).toArray()
+        : await colect.findOne(filter, options);
 
     if (!response) return data;
     response?.status(200);

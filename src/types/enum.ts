@@ -3,6 +3,7 @@ export const enum DbTable {
   GROUP = 'group',
   MESSAGE = 'message',
   ACCOUNT = 'account',
+  APPLY = 'apply',
 }
 
 /** 接口调用后的状态码 */

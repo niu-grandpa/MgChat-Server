@@ -1,8 +1,10 @@
+import dayjs from 'dayjs';
 import express from 'express';
 import { Document, Filter } from 'mongodb';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { DbTable, UserGender, UserStatus } from '../../../types';
 import { userMaxLevel } from './../../../core/index';
+import { DbApply, DbApplyListInfo } from './../../../types/db';
 
 interface QueryFields {
   keywords: string;
@@ -11,11 +13,29 @@ interface QueryFields {
   status?: UserStatus;
 }
 
+type A = DbApply['list'];
+
+interface ApplyFields extends DbApplyListInfo {
+  who: string;
+}
+
 const friendApi = express.Router();
 const { read, update } = useDbCrud();
 const phoneExc = /^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$/;
 
 friendApi
+  /**
+   * 获取用户是否有新好友申请
+   * 需要筛选掉已过期的申请
+   */
+  .get('/has-apply', async (request, response) => {
+    await read({
+      table: DbTable.APPLY,
+      response,
+      filter: { account: request.body.account },
+      options: { list: { $elemMatch: { expiredTime: { $gt: Date.now() } } } },
+    });
+  })
   /**
    * 搜索用户
    * 允许通过用户名/昵称/手机号/关键字模糊查询用户表
@@ -75,13 +95,55 @@ friendApi
       ],
     });
   })
-  .post('/apply-friend', async (request, response) => {})
+  /**
+   * 申请添加对方好友
+   * 新申请有效期为10天
+   * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
+   */
+  .post('/new-apply', async (request, response) => {
+    const { who, ...rest } = request.body as ApplyFields;
+    useApiHandler({
+      response,
+      required: {
+        target: request.body,
+        must: ['who'],
+        check: [{ type: 'String', fields: ['who', 'content'] }],
+      },
+      middleware: [
+        async () => {
+          // 设置申请有效期为10天
+          rest.expiredTime = dayjs().add(10, 'day').valueOf();
+          // 向目标用户添加申请方用户账号
+          await update({
+            table: DbTable.APPLY,
+            response,
+            filter: { who },
+            update: { $addToSet: { list: rest } },
+          });
+        },
+      ],
+    });
+  })
   /**
    * 添加好友
    * 将各自的用户信息相互添加至对方的friends数组
+   * 客户端调用此接口后需再次获取好友列表
    */
-  .post('/add-friend', async (request, response) => {
-    //
+  .post('/new-friend', async (request, response) => {
+    const fields = ['who', 'content'];
+    useApiHandler({
+      response,
+      required: {
+        target: request.body,
+        must: fields,
+        check: [{ type: 'String', fields }],
+      },
+      middleware: [
+        async () => {
+          //
+        },
+      ],
+    });
   })
   /**
    * 删除好友
