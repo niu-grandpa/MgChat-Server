@@ -1,28 +1,17 @@
 import express from 'express';
-import { useApiHandler, useDbCrud } from '../../../hooks';
-import { DbTable } from '../../../types';
+import { useDbCrud } from '../../../hooks';
+import { DbTable, ResponseCode } from '../../../types';
+import { wrapperResult } from '../../../utils';
 
 const infoApi = express.Router();
 const { read } = useDbCrud();
 
 infoApi.get('/info', async (request, response) => {
-  useApiHandler({
-    response,
-    required: {
-      target: request.body,
-      check: [{ type: 'String', fields: ['uid', 'phoneNumber'] }],
-    },
-    middleware: [
-      async () => {
-        await read({
-          table: DbTable.USER,
-          response,
-          request,
-          filter: request.body,
-        });
-      },
-    ],
+  const data = await read({
+    table: DbTable.USER,
+    filter: { uid: request.body.uid },
   });
+  response.send(wrapperResult(data, ResponseCode.SUCCESS));
 });
 
 export default infoApi;

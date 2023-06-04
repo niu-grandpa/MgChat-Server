@@ -6,6 +6,7 @@ export declare namespace DbUser {
     icon: string;
     city: string;
     age: number;
+    token: string;
     status: UserStatus;
     level: number;
     gender: number;
@@ -23,6 +24,7 @@ export declare namespace DbUser {
       logoutTime: number;
       activeTime: number;
       createTime: number;
+      expiredTime: number;
     };
   }
 }
@@ -44,6 +46,7 @@ export declare namespace DbMessage {
     content: string;
     image: string;
     hidden: boolean;
+    isRead: boolean;
     createTime: number;
   };
   type RecordType = {

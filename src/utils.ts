@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import jwt from 'jsonwebtoken';
 import { ResponseCode, ResponseMsg } from './types';
 
 export function wrapperResult(data: any, status: ResponseCode) {
@@ -32,4 +34,28 @@ export function endcodePhoneToken(token: string, code: string): string {
   result += token[0];
 
   return result;
+}
+
+/**
+ * JWT生成用户token
+ *
+ * 注意：桌面应用不存在通过url访问页面，因此token的作用在于登录验证
+ *
+ * @param key uid或phoneNumber
+ */
+export function jwtToken() {
+  //密钥
+  const SECRET_KEY = '6489353z8544r050h04025324131291';
+
+  return {
+    set: (payload: { key: string }) =>
+      jwt.sign(payload, SECRET_KEY, {
+        expiresIn: dayjs().add(6, 'month').valueOf(),
+      }),
+
+    verify: (
+      token: string,
+      callback?: jwt.VerifyCallback<string | jwt.JwtPayload> | undefined
+    ) => jwt.verify(token, SECRET_KEY, { algorithms: ['HS256'] }, callback),
+  };
 }

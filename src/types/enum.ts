@@ -21,7 +21,7 @@ export const enum ResponseCode {
 export const ResponseMsg = {
   0: '成功',
   1: '失败',
-  2: '已过期',
+  2: '令牌已过期',
   3: '数据已存在',
   4: '未查询到相关数据',
   5: '用户不存在或账号错误',

@@ -9,6 +9,12 @@ import {
 } from '../../../types';
 import { wrapperResult } from '../../../utils';
 
+interface HaveReadFields {
+  uid: string;
+  who: string;
+  msgId: string[];
+}
+
 const MessageApi = express.Router();
 const { read, create, update } = useDbCrud();
 
@@ -23,8 +29,16 @@ MessageApi
     });
   })
 
+  /**
+   * 设置消息已读
+   * @todo
+   */
+  .post('/have-read', (request, response) => {
+    const { uid, who, msgId } = request.body as HaveReadFields;
+  })
+
   /**保存消息记录 */
-  .post('/save', async (request, response) => {
+  .post('/save', (request, response) => {
     const { uid, who, recordMsg } = request.body as ClientQueryFields;
     const common = {
       table: DbTable.MESSAGE,
@@ -75,7 +89,7 @@ MessageApi
    * 这里并不会真正的删除该条数据，而是打上隐藏标记
    * 除非参数withdraw为true会真正删除
    */
-  .delete('/remove', async (request, response) => {
+  .delete('/remove', (request, response) => {
     const { uid, cid, withdraw } = request.body as ClientQueryFields;
     const fields = ['uid', 'who', 'cid'];
     let doc: Document;

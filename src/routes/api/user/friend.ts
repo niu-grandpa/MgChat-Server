@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
-import express from 'express';
+import express, { Response } from 'express';
 import { Document, Filter } from 'mongodb';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { DbTable, UserGender, UserStatus } from '../../../types';
 import { userMaxLevel } from './../../../core/index';
-import { DbApply, DbApplyListInfo } from './../../../types/db';
+import { DbApplyListInfo, DbUser } from './../../../types/db';
 
 interface QueryFields {
   keywords: string;
@@ -12,8 +12,6 @@ interface QueryFields {
   gender?: UserGender;
   status?: UserStatus;
 }
-
-type A = DbApply['list'];
 
 interface ApplyFields extends DbApplyListInfo {
   who: string;
@@ -36,12 +34,13 @@ friendApi
       options: { list: { $elemMatch: { expiredTime: { $gt: Date.now() } } } },
     });
   })
+
   /**
    * 搜索用户
    * 允许通过用户名/昵称/手机号/关键字模糊查询用户表
    * 可选附加条件：性别/年龄/优先在线
    */
-  .get('/search-friends', async (request, response) => {
+  .get('/search-friends', (request, response) => {
     const { keywords, ageRange, gender, status } = request.body as QueryFields;
 
     let filter: Filter<Document> = { $and: [] };
@@ -95,12 +94,13 @@ friendApi
       ],
     });
   })
+
   /**
    * 申请添加对方好友
    * 新申请有效期为10天
    * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
    */
-  .post('/new-apply', async (request, response) => {
+  .post('/new-apply', (request, response) => {
     const { who, ...rest } = request.body as ApplyFields;
     useApiHandler({
       response,
@@ -124,12 +124,15 @@ friendApi
       ],
     });
   })
+
   /**
    * 添加好友
    * 将各自的用户信息相互添加至对方的friends数组
    * 客户端调用此接口后需再次获取好友列表
+   * @todo 添加打招呼消息
    */
-  .post('/new-friend', async (request, response) => {
+  .post('/new-friend', (request, response) => {
+    const { who, content, uid } = request.body as ApplyFields;
     const fields = ['who', 'content'];
     useApiHandler({
       response,
@@ -139,12 +142,12 @@ friendApi
         check: [{ type: 'String', fields }],
       },
       middleware: [
-        async () => {
-          //
-        },
+        async () => await addInfo(response, uid, who),
+        async () => await addInfo(response, who, uid),
       ],
     });
   })
+
   /**
    * 删除好友
    * 在用户的friends数组里将目标好友标记已删除，方便下次恢复数据（vip用户）。
@@ -152,3 +155,29 @@ friendApi
   .delete('/remove-friend', async (request, response) => {});
 
 export default friendApi;
+
+const addInfo = async (response: Response, uid: string, friendUid: string) => {
+  // 添加对方用户
+  const friend = (await read({
+    table: DbTable.USER,
+    filter: { uid: friendUid },
+  })) as unknown as DbUser.UserInfo;
+
+  // 重置用户重要信息
+  const newData = {
+    ...friend,
+    token: '',
+    credit: 0,
+    friends: [],
+    groups: [],
+    password: '',
+    timeInfo: {},
+  };
+
+  await update({
+    table: DbTable.USER,
+    filter: { uid },
+    response,
+    update: { $pull: { friends: { newData } } },
+  });
+};
