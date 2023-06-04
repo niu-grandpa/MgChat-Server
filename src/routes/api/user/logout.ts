@@ -13,7 +13,7 @@ const { read, update } = useDbCrud();
 logoutApi.post('/logout', async (request, response) => {
   const common = {
     table: DbTable.USER,
-    filter: { account: request.body.account },
+    filter: { uid: request.body.uid },
   };
   const user = (await read(common)) as unknown as DbUser.UserInfo;
 

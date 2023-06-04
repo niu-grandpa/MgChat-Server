@@ -4,7 +4,7 @@ import { ResponseCode, UserStatus } from './enum';
 /** 展示客户端传递给api接口的所有参数字段 */
 export interface ClientQueryFields {
   id: string;
-  account: string;
+  uid: string;
   password: string;
   code: string;
   who: string;

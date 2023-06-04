@@ -32,7 +32,7 @@ friendApi
     await read({
       table: DbTable.APPLY,
       response,
-      filter: { account: request.body.account },
+      filter: { uid: request.body.uid },
       options: { list: { $elemMatch: { expiredTime: { $gt: Date.now() } } } },
     });
   })
@@ -71,7 +71,7 @@ friendApi
           // 判断是否为全数字，可能是查账号或查手机号
           if (keywords.length >= 10 && !isNaN(keywords as any)) {
             if (keywords.length === 10) {
-              filter.$and = [{ ...extraFlat, account: keywords }];
+              filter.$and = [{ ...extraFlat, uid: keywords }];
             } else if (phoneExc.test(keywords)) {
               filter.$and = [{ ...extraFlat, phoneNumber: keywords }];
             }

@@ -17,8 +17,8 @@ loginApi
    * 账号密码登录
    */
   .post('/login', async (request, response) => {
-    const { account, password } = request.body as ClientQueryFields;
-    const fields = ['account', 'password'];
+    const { uid, password } = request.body as ClientQueryFields;
+    const fields = ['uid', 'password'];
     useApiHandler({
       response,
       required: {
@@ -30,7 +30,7 @@ loginApi
         async () => {
           const user = (await read({
             table: DbTable.USER,
-            filter: { account },
+            filter: { uid },
           })) as unknown as DbUser.UserInfo;
           // 检查账号密码是否正确
           if (user === null) {
@@ -51,7 +51,7 @@ loginApi
           await update({
             response,
             table: DbTable.USER,
-            filter: { account },
+            filter: { uid },
             update: {
               // 更新登录状态与时间
               $set: {

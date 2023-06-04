@@ -10,7 +10,7 @@ infoApi.get('/info', async (request, response) => {
     response,
     required: {
       target: request.body,
-      check: [{ type: 'String', fields: ['account', 'phoneNumber'] }],
+      check: [{ type: 'String', fields: ['uid', 'phoneNumber'] }],
     },
     middleware: [
       async () => {

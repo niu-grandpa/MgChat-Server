@@ -19,28 +19,27 @@ MessageApi
       response,
       request,
       table: DbTable.MESSAGE,
-      filter: { account: request.body.account },
+      filter: { uid: request.body.uid },
     });
   })
 
   /**保存消息记录 */
   .post('/save', async (request, response) => {
-    const { account, who, recordMsg } = request.body as ClientQueryFields;
+    const { uid, who, recordMsg } = request.body as ClientQueryFields;
     const common = {
       table: DbTable.MESSAGE,
-      filter: { account },
+      filter: { uid },
     };
     useApiHandler({
       response,
       required: {
         target: request.body,
-        must: ['account', 'recordMsg'],
+        must: ['uid', 'recordMsg'],
         check: [{ type: 'Object', fields: ['recordMsg'] }],
       },
       middleware: [
         // 当前用户是否创建了消息记录数据集
-        async () =>
-          await create({ ...common, newData: { account, record: [] } }),
+        async () => await create({ ...common, newData: { uid, record: [] } }),
         async () => {
           const { record } = (await read(
             common
@@ -77,8 +76,8 @@ MessageApi
    * 除非参数withdraw为true会真正删除
    */
   .delete('/remove', async (request, response) => {
-    const { account, cid, withdraw } = request.body as ClientQueryFields;
-    const fields = ['account', 'who', 'cid'];
+    const { uid, cid, withdraw } = request.body as ClientQueryFields;
+    const fields = ['uid', 'who', 'cid'];
     let doc: Document;
 
     useApiHandler({
@@ -103,7 +102,7 @@ MessageApi
           await update({
             table: DbTable.MESSAGE,
             response,
-            filter: { account },
+            filter: { uid },
             ...doc,
           });
         },

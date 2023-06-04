@@ -13,7 +13,7 @@ export declare namespace DbUser {
     privilege: number;
     upgradeDays: number;
     nickname: string;
-    account: string;
+    uid: string;
     password: string;
     phoneNumber: string;
     friends: UserInfo[];
@@ -52,7 +52,7 @@ export declare namespace DbMessage {
     message: HistoryMessageType[];
   };
   interface Record {
-    account: string;
+    uid: string;
     record: RecordType[];
   }
 }
@@ -65,12 +65,12 @@ export interface DbAccount {
 
 export interface DbApply {
   _id: ObjectId;
-  account: string;
+  uid: string;
   list?: DbApplyListInfo[];
 }
 
 export type DbApplyListInfo = {
-  account: string;
+  uid: string;
   content?: string;
   expiredTime: number;
 };

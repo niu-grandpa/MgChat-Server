@@ -30,7 +30,7 @@ const initUserData = () => ({
 registerApi.post('/register', (request, response) => {
   const { phoneNumber } = request.body;
   const fields = ['nickname', 'phoneNumber', 'code', 'password'];
-  let account = '';
+  let uid = '';
 
   useApiHandler({
     response,
@@ -50,20 +50,20 @@ registerApi.post('/register', (request, response) => {
         }
       },
       async () => {
-        account = await useGenerateUid();
+        uid = await useGenerateUid();
         await create({
           table: DbTable.USER,
           request,
           response,
           filter: { phoneNumber },
-          newData: { ...initUserData(), ...request.body, account },
+          newData: { ...initUserData(), ...request.body, uid },
         });
       },
       async () => {
         // 初始化新用户的好友申请表数据
         await create({
           table: DbTable.APPLY,
-          filter: { account },
+          filter: { uid },
           newData: { list: [] },
         });
       },
