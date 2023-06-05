@@ -16,8 +16,8 @@ function useDbCrud() {
     const colect = getTable(table);
     const data =
       type === 'findAll'
-        ? await colect.find(filter, options).toArray()
-        : await colect.findOne(filter, options);
+        ? await colect.find(filter!, options).toArray()
+        : await colect.findOne(filter!, options);
 
     if (!response) return data;
     response?.status(200);
@@ -30,10 +30,12 @@ function useDbCrud() {
   };
 
   const onCreate = async ({ table, filter, newData, response }: UseCrud) => {
-    const hasData = await onRead({ table, filter });
-    if (hasData !== null) {
-      response?.send(wrapperResult(null, ResponseCode.EXISTED));
-      return;
+    if (filter) {
+      const hasData = await onRead({ table, filter });
+      if (hasData !== null) {
+        response?.send(wrapperResult(null, ResponseCode.EXISTED));
+        return;
+      }
     }
     const colect = getTable(table);
     await colect.insertOne(newData!);
@@ -51,7 +53,7 @@ function useDbCrud() {
     options,
   }: UseCrud) => {
     const colect = getTable(table);
-    await colect.updateOne(filter, update!, options);
+    await colect.updateOne(filter!, update!, options);
     response?.status(200);
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };

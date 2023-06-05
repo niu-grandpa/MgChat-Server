@@ -1,7 +1,16 @@
 import express from 'express';
 import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
 import { DbTable, ResponseCode, UserGender, UserStatus } from '../../../types';
-import { wrapperResult } from '../../../utils';
+import { jwtToken, wrapperResult } from '../../../utils';
+
+interface RegisterFields {
+  nickname: string;
+  phoneNumber: string;
+  password: string;
+  code: string;
+  age?: number;
+  gender?: UserGender;
+}
 
 const registerApi = express.Router();
 
@@ -23,12 +32,13 @@ const initUserData = () => ({
     loginTime: '',
     logoutTime: '',
     activeTime: 0,
+    expiredTime: 0,
     createTime: Date.now(),
   },
 });
 
 registerApi.post('/register', (request, response) => {
-  const { phoneNumber } = request.body;
+  const { phoneNumber, code } = request.body as RegisterFields;
   const fields = ['nickname', 'phoneNumber', 'code', 'password'];
   let uid = '';
 
@@ -55,17 +65,17 @@ registerApi.post('/register', (request, response) => {
           table: DbTable.USER,
           request,
           response,
-          filter: { phoneNumber },
-          newData: { ...initUserData(), ...request.body, uid },
+          newData: {
+            uid,
+            token: jwtToken().set({ key: phoneNumber + code }),
+            ...initUserData(),
+            ...request.body,
+          },
         });
       },
       async () => {
-        // 初始化新用户的好友申请表数据
-        await create({
-          table: DbTable.APPLY,
-          filter: { uid },
-          newData: { list: [] },
-        });
+        // 初始化新用户好友申请表数据
+        await create({ table: DbTable.APPLY, newData: { list: [] } });
       },
     ],
   });

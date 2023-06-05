@@ -38,6 +38,7 @@ forgetPwApi.post('/forget', (request, response) => {
           response,
           update: { $set: { code, password } },
         });
+        // todo 更新token
       },
     ],
   });

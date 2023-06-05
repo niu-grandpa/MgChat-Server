@@ -20,7 +20,7 @@ export interface UseCrud {
   table: DbTable;
   response?: Response;
   request?: Request;
-  filter: Filter<Document>;
+  filter?: Filter<Document>;
   update?: UpdateFilter<unknown>;
   newData?: Document;
   options?: any;
