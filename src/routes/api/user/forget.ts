@@ -8,7 +8,7 @@ const { read, update } = useDbCrud();
 
 forgetPwApi.post('/forget', (request, response) => {
   const fields = ['phoneToken', 'password'];
-  const { code, password, phoneToken } = request.body as ClientQueryFields;
+  const { code, password, phoneToken } = request.body.data as ClientQueryFields;
   const common = {
     table: DbTable.USER,
     filter: { phoneNumber: endcodePhoneToken(phoneToken, code) },
@@ -16,7 +16,7 @@ forgetPwApi.post('/forget', (request, response) => {
   useApiHandler({
     response,
     required: {
-      target: request.body,
+      target: request.body.data,
       must: fields,
       check: [
         {

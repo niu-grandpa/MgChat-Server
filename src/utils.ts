@@ -45,12 +45,12 @@ export function endcodePhoneToken(token: string, code: string): string {
  */
 export function jwtToken() {
   //密钥
-  const SECRET_KEY = '6489353z8544r050h04025324131291';
+  const SECRET_KEY = '89353z8544r050h040241391';
 
   return {
     set: (payload: { key: string }) =>
       jwt.sign(payload, SECRET_KEY, {
-        expiresIn: dayjs().add(6, 'month').valueOf(),
+        expiresIn: dayjs().add(1, 'month').valueOf(),
       }),
 
     verify: (

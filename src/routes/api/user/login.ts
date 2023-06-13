@@ -30,11 +30,11 @@ loginApi
    * 检查是否已登陆
    */
   .post('/login-with-token', (request, response) => {
-    const { token } = request.body;
+    const { token } = request.body.data;
     useApiHandler({
       response,
       required: {
-        target: request.body,
+        target: request.body.data,
       },
       middleware: [
         async () => {
@@ -61,7 +61,7 @@ loginApi
    * 检查账号是否存在、密码是否正确、是否已在线、token是否已过期
    */
   .post('/login-with-pwd', (request, response) => {
-    const { uid: id, password } = request.body as LoginWithPwd;
+    const { uid: id, password } = request.body.data as LoginWithPwd;
     const fields = ['uid', 'password', 'token'];
 
     let _token = '';
@@ -69,7 +69,7 @@ loginApi
     useApiHandler({
       response,
       required: {
-        target: request.body,
+        target: request.body.data,
         must: fields,
         check: [{ type: 'String', fields }],
       },
@@ -116,13 +116,13 @@ loginApi
    * 检查手机号是否已注册、是否已在线、token是否已过期，如果没有则客户端引导用户注册
    */
   .post('/login-with-phone', (request, response) => {
-    const { phoneNumber, code } = request.body as LoginWithPhone;
+    const { phoneNumber, code } = request.body.data as LoginWithPhone;
     const fields = ['uid', 'password', 'token'];
     let _token = '';
     useApiHandler({
       response,
       required: {
-        target: request.body,
+        target: request.body.data,
         must: fields,
         check: [{ type: 'String', fields }],
       },
@@ -166,9 +166,10 @@ const userUpdate = async (
   await update({
     table: DbTable.USER,
     filter,
-    response,
-    update: newData,
+    update: { $set: newData },
   });
+
+  await read({ table: DbTable.USER, filter, response });
 };
 
 /**

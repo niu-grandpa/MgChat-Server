@@ -6,11 +6,12 @@ import useRegisterApi from './routes';
 
 const app = express();
 
-app.use(logger('dev'));
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use('/', express.static(path.join(__dirname, 'public')));
+app
+  .use(logger('dev'))
+  .use(cookieParser())
+  .use(express.json())
+  .use(express.urlencoded({ extended: false }))
+  .use('/', express.static(path.join(__dirname, 'public')));
 
 useRegisterApi(app);
 

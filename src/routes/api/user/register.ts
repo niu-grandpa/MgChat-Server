@@ -38,23 +38,24 @@ const initUserData = () => ({
 });
 
 registerApi.post('/register', (request, response) => {
-  const { phoneNumber, code } = request.body as RegisterFields;
+  const { phoneNumber, code, password, ...rest } = request.body.data;
   const fields = ['nickname', 'phoneNumber', 'code', 'password'];
   let uid = '';
 
   useApiHandler({
     response,
     required: {
-      target: request.body,
+      target: request.body.data,
       must: fields,
       check: [{ type: 'String', fields }],
     },
     middleware: [
       async () => {
-        if (
-          (await read({ table: DbTable.USER, filter: { phoneNumber } })) !==
-          null
-        ) {
+        const data = await read({
+          table: DbTable.USER,
+          filter: { phoneNumber },
+        });
+        if (data !== null) {
           response.send(wrapperResult(null, ResponseCode.EXISTED));
           return false;
         }
@@ -67,15 +68,15 @@ registerApi.post('/register', (request, response) => {
           response,
           newData: {
             uid,
-            token: jwtToken().set({ key: phoneNumber + code }),
+            password,
+            phoneNumber,
+            token: jwtToken().set({ key: phoneNumber + password }),
             ...initUserData(),
-            ...request.body,
+            ...rest,
           },
         });
-      },
-      async () => {
         // 初始化新用户好友申请表数据
-        await create({ table: DbTable.APPLY, newData: { list: [] } });
+        await create({ table: DbTable.APPLY, newData: { uid, list: [] } });
       },
     ],
   });

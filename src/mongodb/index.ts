@@ -28,10 +28,10 @@ function createDatabase() {
 
   // 初始化user表数据
   const user = db.collection('user');
-  user.findOne({ account: initUId }).then(res => {
+  user.findOne({ uid: initUId }).then(res => {
     if (res === null) {
       user.insertOne({
-        account: initUId,
+        uid: initUId,
         password: adminPwd,
         level: 12,
         gender: 0,

@@ -30,8 +30,8 @@ export const ResponseMsg = {
 };
 
 export const enum UserStatus {
-  ONLINE = 0,
-  OFFLINE = 1,
+  OFFLINE = 0,
+  ONLINE = 1,
   ACTIVE = 2,
   BUSY = 3,
   INVISIBILITY = 4,

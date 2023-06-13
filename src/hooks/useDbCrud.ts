@@ -3,12 +3,12 @@ import { ResponseCode } from '../types';
 import { wrapperResult } from '../utils';
 import { UseCrud } from './types';
 
+const getTable = (name: string) => db.collection(name);
+
 /**
  * 封装数据库增删改查操作，同时也赋予其处理接口对客户端的回复能力
  */
 function useDbCrud() {
-  const getTable = (name: string) => db.collection(name);
-
   const onRead = async (
     { table, filter, response, options }: UseCrud,
     type?: 'findAll'
@@ -21,7 +21,6 @@ function useDbCrud() {
 
     if (!response) return data;
     response?.status(200);
-
     if (data === null) {
       response?.send(wrapperResult(null, ResponseCode.NONE));
       return;
@@ -53,7 +52,7 @@ function useDbCrud() {
     options,
   }: UseCrud) => {
     const colect = getTable(table);
-    await colect.updateOne(filter!, update!, options);
+    const data = await colect.updateOne(filter!, update!, options);
     response?.status(200);
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };

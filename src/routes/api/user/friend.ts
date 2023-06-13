@@ -30,7 +30,7 @@ friendApi
     await read({
       table: DbTable.APPLY,
       response,
-      filter: { uid: request.body.uid },
+      filter: { uid: request.query.uid },
       options: { list: { $elemMatch: { expiredTime: { $gt: Date.now() } } } },
     });
   })
@@ -41,7 +41,8 @@ friendApi
    * 可选附加条件：性别/年龄/优先在线
    */
   .get('/search-friends', (request, response) => {
-    const { keywords, ageRange, gender, status } = request.body as QueryFields;
+    const { keywords, ageRange, gender, status } =
+      request.query as unknown as QueryFields;
 
     let filter: Filter<Document> = { $and: [] };
     const extra = {
@@ -101,11 +102,11 @@ friendApi
    * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
    */
   .post('/new-apply', (request, response) => {
-    const { who, ...rest } = request.body as ApplyFields;
+    const { who, ...rest } = request.body.data as ApplyFields;
     useApiHandler({
       response,
       required: {
-        target: request.body,
+        target: request.body.data,
         must: ['who'],
         check: [{ type: 'String', fields: ['who', 'content'] }],
       },
@@ -132,12 +133,12 @@ friendApi
    * @todo 添加打招呼消息
    */
   .post('/new-friend', (request, response) => {
-    const { who, content, uid } = request.body as ApplyFields;
+    const { who, content, uid } = request.body.data as ApplyFields;
     const fields = ['who', 'content'];
     useApiHandler({
       response,
       required: {
-        target: request.body,
+        target: request.body.data,
         must: fields,
         check: [{ type: 'String', fields }],
       },

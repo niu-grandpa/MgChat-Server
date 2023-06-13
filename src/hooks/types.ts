@@ -7,7 +7,7 @@ export interface UseApiHandler {
   /**校验必填参数字段和类型，如果不通过会阻止中间件函数执行 */
   required?: {
     /**目标对象 */
-    target: object;
+    target: any;
     /**必填字段 */
     must?: string[];
     check?: { type: string; fields: string[] }[];
