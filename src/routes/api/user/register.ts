@@ -70,7 +70,7 @@ registerApi.post('/register', (request, response) => {
             uid,
             password,
             phoneNumber,
-            token: jwtToken().set({ key: phoneNumber + password }),
+            token: jwtToken().set({ phoneNumber, password, code }),
             ...initUserData(),
             ...rest,
           },

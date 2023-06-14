@@ -1,29 +1,28 @@
 import express from 'express';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { ClientQueryFields, DbTable, ResponseCode } from '../../../types';
-import { endcodePhoneToken, wrapperResult } from '../../../utils';
+import { jwtToken, wrapperResult } from '../../../utils';
 
 const forgetPwApi = express.Router();
 const { read, update } = useDbCrud();
 
 forgetPwApi.post('/forget', (request, response) => {
-  const fields = ['phoneToken', 'password'];
-  const { code, password, phoneToken } = request.body.data as ClientQueryFields;
+  const fields = ['phoneNumber', 'password', 'code'];
+
+  const { code, password, phoneNumber } = request.body
+    .data as ClientQueryFields;
+
   const common = {
     table: DbTable.USER,
-    filter: { phoneNumber: endcodePhoneToken(phoneToken, code) },
+    filter: { phoneNumber },
   };
+
   useApiHandler({
     response,
     required: {
       target: request.body.data,
       must: fields,
-      check: [
-        {
-          type: 'String',
-          fields: fields,
-        },
-      ],
+      check: [{ type: 'String', fields: fields }],
     },
     middleware: [
       async () => {
@@ -36,9 +35,14 @@ forgetPwApi.post('/forget', (request, response) => {
         await update({
           ...common,
           response,
-          update: { $set: { code, password } },
+          update: {
+            $set: {
+              code,
+              password,
+              token: jwtToken().set({ phoneNumber, password, code }),
+            },
+          },
         });
-        // todo 更新token
       },
     ],
   });

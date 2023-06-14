@@ -2,7 +2,11 @@ import express, { Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { DbTable, DbUser, ResponseCode, UserStatus } from '../../../types';
-import { jwtToken, wrapperResult } from '../../../utils';
+import {
+  JwtPayload as MyJwtPayload,
+  jwtToken,
+  wrapperResult,
+} from '../../../utils';
 
 interface LoginWithPwd {
   uid: string;
@@ -25,7 +29,7 @@ const __jwtToken = jwtToken();
 
 loginApi
   /**
-   * 单点登录
+   * token登录
    * 检查token是否存在，如果不存在需要客户端切换非单点登录重新获取token，
    * 检查是否已登陆
    */
@@ -47,6 +51,8 @@ loginApi
             response.send(wrapperResult(null, ResponseCode.EXPIRED));
             return false;
           }
+          // !检查token是否已过期，由客户端实现
+          // 检查是否已在线
           if (isOnline(data.status, response)) {
             return false;
           }
@@ -100,7 +106,7 @@ loginApi
           if (isOnline(data.status, response)) {
             return false;
           }
-          _token = isRestToken(_token, data.timeInfo.expiredTime, id);
+          _token = isRestToken(_token, data.timeInfo.expiredTime, { uid: id });
         },
         async () => {
           // 更新用户状态，登录时间
@@ -136,7 +142,10 @@ loginApi
           if (isOnline(status, response)) {
             return false;
           }
-          _token = isRestToken(token, timeInfo.expiredTime, phoneNumber + code);
+          _token = isRestToken(token, timeInfo.expiredTime, {
+            phoneNumber,
+            code,
+          });
         },
         async () => {
           await userUpdate(response, { phoneNumber }, _token);
@@ -175,9 +184,13 @@ const userUpdate = async (
 /**
  * 当token为空或已过期时才触发重置
  */
-const isRestToken = (token: string, expiredTime: number, val: string) => {
+const isRestToken = (
+  token: string,
+  expiredTime: number,
+  payload: MyJwtPayload
+) => {
   if (!token || expiredTime < Date.now()) {
-    return __jwtToken.set({ key: val });
+    return __jwtToken.set(payload);
   }
   return '';
 };

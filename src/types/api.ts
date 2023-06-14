@@ -9,9 +9,8 @@ export interface ClientQueryFields {
   code: string;
   who: string;
   cid: string;
-  phoneToken: string;
   status: UserStatus;
-  phoneNumber: number;
+  phoneNumber: string;
   withdraw: boolean;
   timeInfo: DbUser.UserInfo['timeInfo'];
   recordMsg: DbMessage.HistoryMessageType;
