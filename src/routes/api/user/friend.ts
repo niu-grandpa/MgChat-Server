@@ -112,8 +112,8 @@ friendApi
       },
       middleware: [
         async () => {
-          // 设置申请有效期为10天
-          rest.expiredTime = dayjs().add(10, 'day').valueOf();
+          // 设置申请有效期为3天
+          rest.expiredTime = dayjs().add(3, 'day').valueOf();
           // 向目标用户添加申请方用户账号
           await update({
             table: DbTable.APPLY,

@@ -4,6 +4,8 @@ import { DbTable } from '../types';
 export interface UseApiHandler {
   /**接口response */
   response: Response;
+  /**检查验证码是否有效 */
+  verifyCaptcha?: { phoneNumber: string; code: string };
   /**校验必填参数字段和类型，如果不通过会阻止中间件函数执行 */
   required?: {
     /**目标对象 */

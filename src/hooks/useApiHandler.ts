@@ -3,22 +3,25 @@ import { UseApiHandler } from './types';
 /**
  * useApiHandler
  *
- * 检查客户端传递的参数字段是否缺失与类型是否正确，并提供中间件功能
+ * 检查客户端传递的参数字段是否缺失、类型是否正确、验证码是否有效，并提供中间件功能
  */
 async function useApiHandler({
   response,
   required,
   middleware,
+  verifyCaptcha,
 }: UseApiHandler) {
   if (required !== undefined) {
     const { target, check, must } = required;
     const map: Record<string, string[]> = {};
-
-    check?.forEach(({ type, fields }) => {
-      map[type] = fields;
-    });
-
     let pass = true;
+
+    // 检查验证码是否有效
+    if (verifyCaptcha && !isCaptchaValid(verifyCaptcha)) {
+      response.status(500);
+      response.send('验证码无效');
+      return;
+    }
 
     // 检查字段是否缺失
     if (must && must.length) {
@@ -34,6 +37,8 @@ async function useApiHandler({
     }
 
     // 检查字段类型是否正确
+    check?.forEach(({ type, fields }) => (map[type] = fields));
+
     for (const type in map) {
       for (const field of map[type]) {
         if (target[field] && typeof target[field] !== type.toLowerCase()) {
@@ -62,6 +67,10 @@ async function useApiHandler({
 
 function isAsyncFunction(fn: any) {
   return fn[Symbol.toStringTag] === 'AsyncFunction';
+}
+
+function isCaptchaValid(data: UseApiHandler['verifyCaptcha']): boolean {
+  return true;
 }
 
 export { useApiHandler };

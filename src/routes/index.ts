@@ -1,8 +1,9 @@
 import { Express } from 'express';
+import captchaApi from './api/captcha';
 import MessageApi from './api/message';
 import UserApi from './api/user';
 
-function useRegisterApi(app: Express) {
+function onRegisterApi(app: Express) {
   /**
    * 设置允许跨域
    */
@@ -29,6 +30,9 @@ function useRegisterApi(app: Express) {
 
   // 消息接口
   app.use('/api/message', MessageApi);
+
+  // 验证码接口
+  app.use('/api/captcha', captchaApi);
 }
 
-export default useRegisterApi;
+export default onRegisterApi;
