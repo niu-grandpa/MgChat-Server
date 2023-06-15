@@ -51,15 +51,13 @@ function useDbCrud() {
     response,
     options,
   }: UseCrud) => {
-    const colect = getTable(table);
-    const data = await colect.updateOne(filter!, update!, options);
+    await getTable(table).updateOne(filter!, update!, options);
     response?.status(200);
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };
 
   const onDelete = async ({ table, filter, response, options }: UseCrud) => {
-    const colect = getTable(table);
-    await colect.deleteOne(filter, options || {});
+    await getTable(table).deleteOne(filter, options || {});
     response?.send(200);
     response?.send(wrapperResult(null, ResponseCode.SUCCESS));
   };

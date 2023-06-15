@@ -27,7 +27,7 @@ export function wrapperResult(data: any, status: ResponseCode) {
  */
 export function jwtToken() {
   //密钥
-  const SECRET_KEY = '89353z8544r050h040241391';
+  const SECRET_KEY = 'Z99w0t772r3h';
 
   return {
     set: (payload: JwtPayload) =>
@@ -39,5 +39,7 @@ export function jwtToken() {
       token: string,
       callback?: jwt.VerifyCallback<string | jwt.JwtPayload> | undefined
     ) => jwt.verify(token, SECRET_KEY, { algorithms: ['HS256'] }, callback),
+
+    decode: (token: string) => jwt.decode(token),
   };
 }

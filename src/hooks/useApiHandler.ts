@@ -26,7 +26,7 @@ async function useApiHandler({
         if (!(key in target)) {
           pass = false;
           response.status(500);
-          response.send(`缺少参数 "${key}", 但是必填参数项有 "${must}"`);
+          response.send(`接口缺少参数 "${key}", 必填参数项: [${must}]`);
           break;
         }
       }

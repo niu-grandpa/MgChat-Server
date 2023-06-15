@@ -8,22 +8,22 @@ import {
   wrapperResult,
 } from '../../../utils';
 
-interface LoginWithPwd {
+type LoginWithPwd = {
   uid: string;
   password: string;
-}
+};
 
-interface LoginWithPhone {
+type LoginWithPhone = {
   phoneNumber: string;
   code: string;
-}
+};
 
 const loginApi = express.Router();
 const { read, update } = useDbCrud();
 const __jwtToken = jwtToken();
 
 /**
- * 实现单点登录、密码登录、手机验证码登录
+ * 实现token登录、密码登录、手机验证码登录
  * 后两个登录方式每一次都会刷新token值
  */
 
@@ -67,10 +67,12 @@ loginApi
    * 检查账号是否存在、密码是否正确、是否已在线、token是否已过期
    */
   .post('/login-with-pwd', (request, response) => {
-    const { uid: id, password } = request.body.data as LoginWithPwd;
-    const fields = ['uid', 'password', 'token'];
+    const fields = ['uid', 'password'];
+    const { uid: id, password: pwdToken } = request.body.data as LoginWithPwd;
+    // 解密密码
+    const { password } = __jwtToken.decode(pwdToken) as { password: string };
 
-    let _token = '';
+    let newToken = '';
 
     useApiHandler({
       response,
@@ -85,10 +87,10 @@ loginApi
           if (
             (await read({
               table: DbTable.ACCOUNT,
-              response,
               filter: { uid: id },
             })) === null
           ) {
+            response.send(wrapperResult(null, ResponseCode.NO_ACCOUNT));
             return false;
           }
         },
@@ -106,11 +108,15 @@ loginApi
           if (isOnline(data.status, response)) {
             return false;
           }
-          _token = isRestToken(_token, data.timeInfo.expiredTime, { uid: id });
+          // token是否需要重置
+          newToken = isRestToken(newToken, data.timeInfo.expiredTime, {
+            uid: id,
+            password,
+          });
         },
         async () => {
           // 更新用户状态，登录时间
-          await userUpdate(response, { uid: id }, _token);
+          await userUpdate(response, { uid: id }, newToken);
           // todo 通知其他好友已上线
         },
       ],
@@ -124,7 +130,7 @@ loginApi
   .post('/login-with-phone', (request, response) => {
     const { phoneNumber, code } = request.body.data as LoginWithPhone;
     const fields = ['uid', 'password', 'token'];
-    let _token = '';
+    let newToken = '';
     useApiHandler({
       response,
       required: {
@@ -142,13 +148,13 @@ loginApi
           if (isOnline(status, response)) {
             return false;
           }
-          _token = isRestToken(token, timeInfo.expiredTime, {
+          newToken = isRestToken(token, timeInfo.expiredTime, {
             phoneNumber,
             code,
           });
         },
         async () => {
-          await userUpdate(response, { phoneNumber }, _token);
+          await userUpdate(response, { phoneNumber }, newToken);
           // todo 通知其他好友已上线
         },
       ],
@@ -158,16 +164,16 @@ loginApi
 const userUpdate = async (
   response: Response,
   filter: object,
-  token: string
+  newToken: string
 ) => {
   const newData = {
     status: UserStatus.ONLINE,
     'timeInfo.loginTime': Date.now(),
   };
 
-  if (token !== '') {
-    newData['token'] = token;
-    __jwtToken.verify(token, (_, decoded) => {
+  if (newToken !== '') {
+    newData['token'] = newToken;
+    __jwtToken.verify(newToken, (_, decoded) => {
       newData['timeInfo.expiredTime'] = (decoded as JwtPayload).exp;
     });
   }

@@ -22,16 +22,16 @@ for (let i = 1; i <= userMaxLevel; i++) {
  */
 export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
   const { level, timeInfo } = data;
-  const { loginTime, logoutTime } = timeInfo;
+  const { loginTime, logoutTime, lastActiveTime } = timeInfo;
 
   // 当前活跃时间由下线时间减去登录时间得到，单位（h）
   let currentActiveHours = dayjs(logoutTime).diff(dayjs(loginTime), 'h');
   let currentActiveMinutes = dayjs(logoutTime).diff(dayjs(loginTime), 'm');
 
-  // 当前活跃时间每达到整的1个小时阶段，每次加50积分
+  // 当前活跃时间每达到整的1个小时阶段，每次加6积分
   if (currentActiveHours >= 1) {
     let t = currentActiveHours;
-    while (t--) data.credit += 50;
+    while (t--) data.credit += 6;
   } else if (currentActiveMinutes > 0) {
     // 登录一个小时之内的按分钟转成小时
     currentActiveHours = Number((currentActiveMinutes / 60).toFixed(1));
@@ -40,24 +40,38 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
   // 更新总活跃时间
   data.timeInfo.activeTime += currentActiveHours;
 
+  // 用户未满级，执行升级算法
   if (level < userMaxLevel) {
-    // 获得升级天数的途径是通过累计每次登录的活跃小时数，并转成天数
-    const upgradeDays = (data.upgradeDays += ~~(currentActiveHours / 24));
-    const limit = levelDays[level];
-    if (upgradeDays >= limit) {
-      data.level += 1;
-      // 升级一次+200用户积分
-      data.credit += 200;
-      // 如果不是为0，说明当前攒的升级天数有多出来的，要作为下一次升级的初始天数
-      // 例如需要攒7天的升级天数，但是当前结算后得到的可消耗升级天数为9，
-      // 那么多出来2天作为下一次升级的初始天数
-      data.upgradeDays -= limit;
-    }
-  }
+    // 当活跃时间+上次临时累计的活跃时间
+    currentActiveHours += lastActiveTime;
 
-  // 当前活跃时间大于1小时+10积分
-  while (currentActiveHours > 0 && currentActiveHours--) {
-    data.credit += 10;
+    // 计算从登录到登出的时间是否大于等于1天
+    const payload = ~~(currentActiveHours / 24);
+
+    // 不到1天则累加到上次活跃时间
+    if (payload < 1) {
+      data.timeInfo.lastActiveTime += currentActiveHours;
+    } else {
+      const limit = levelDays[level];
+      // 获得升级天数的途径是通过累计每次登录的活跃小时数，并转成天数
+      const upgradeDays = (data.upgradeDays += payload);
+      // 累计升级天数达到了对应等级限制的升级天数
+      if (upgradeDays >= limit) {
+        data.level += 1;
+
+        // 升级一次+100积分
+        data.credit += 100;
+
+        // 如果不是为0，说明当前攒的升级天数有多出来的，要作为下一次升级的初始天数
+        // 例如需要攒7天的升级天数，但是当前结算后得到的可消耗升级天数为9，
+        // 那么多出来2天作为下一次升级的初始天数
+        data.upgradeDays -= limit;
+
+        while (data.upgradeDays > 0) {
+          data.timeInfo.lastActiveTime += 24;
+        }
+      }
+    }
   }
 
   return data;

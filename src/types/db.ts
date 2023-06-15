@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { MessageRole, UserStatus } from './enum';
 
 export declare namespace DbUser {
-  interface UserInfo {
+  type UserInfo = {
     icon: string;
     city: string;
     age: number;
@@ -25,18 +25,19 @@ export declare namespace DbUser {
       activeTime: number;
       createTime: number;
       expiredTime: number;
+      lastActiveTime: number;
     };
-  }
+  };
 }
 
 export declare namespace DbGroup {
-  interface GroupInfo {
+  type GroupInfo = {
     gid: number;
     name: string;
     owner: DbUser.UserInfo;
     member: DbUser.UserInfo[];
     createTime: number;
-  }
+  };
 }
 
 export declare namespace DbMessage {
@@ -54,23 +55,23 @@ export declare namespace DbMessage {
     createTime: number;
     message: HistoryMessageType[];
   };
-  interface Record {
+  type Record = {
     uid: string;
     record: RecordType[];
-  }
+  };
 }
 
-export interface DbAccount {
+export type DbAccount = {
   _id: ObjectId;
   uid: string[];
   key: 'allUids';
-}
+};
 
-export interface DbApply {
+export type DbApply = {
   _id: ObjectId;
   uid: string;
   list?: DbApplyListInfo[];
-}
+};
 
 export type DbApplyListInfo = {
   uid: string;
