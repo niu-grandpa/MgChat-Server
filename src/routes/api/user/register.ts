@@ -45,6 +45,7 @@ registerApi.post('/register', (request, response) => {
 
   useApiHandler({
     response,
+    verifyCaptcha: { phoneNumber, code },
     required: {
       target: request.body.data,
       must: fields,

@@ -38,4 +38,4 @@ pnpm-lock.yaml
 yarn.lock
 dist-electron
 
-/src/mongodb/private.ts
+/src/private.ts

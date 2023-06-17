@@ -1,5 +1,6 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
-import { DB_TABLE_NAME, MyMongoDbURI, adminPwd, initUId } from './private';
+import { DB_TABLE_NAME, MyMongoDbURI, adminPwd, initUId } from '../private';
+import { DbTable } from '../types';
 
 function runMongoClient(name: string) {
   // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -16,10 +17,10 @@ function runMongoClient(name: string) {
 }
 
 function createDatabase() {
-  const db = runMongoClient('MgChat');
+  const db = runMongoClient(DB_TABLE_NAME);
 
   // 初始化account表的数据
-  const account = db.collection('account');
+  const account = db.collection(DbTable.ACCOUNT);
   account.findOne({ uid: { $exists: true } }).then(res => {
     if (res === null) {
       account.insertOne({ key: 'allUid', uid: [initUId] });
@@ -27,7 +28,7 @@ function createDatabase() {
   });
 
   // 初始化user表数据
-  const user = db.collection('user');
+  const user = db.collection(DbTable.USER);
   user.findOne({ uid: initUId }).then(res => {
     if (res === null) {
       user.insertOne({
@@ -40,6 +41,13 @@ function createDatabase() {
       });
     }
   });
+
+  // 创建验证码集合，具有TTL索引，「createdAt」字段设置为文档的过期时间（秒）。
+  // 新文档将在5分钟后从集合中删除。
+  db.collection(DbTable.CAPTCHAS).createIndex(
+    { createdAt: 1 },
+    { expireAfterSeconds: 60 * 5 }
+  );
 
   return db;
 }

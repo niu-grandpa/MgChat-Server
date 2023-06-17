@@ -1,4 +1,8 @@
+import Dysmsapi20170525, * as $Dysmsapi20170525 from '@alicloud/dysmsapi20170525';
+import * as $OpenApi from '@alicloud/openapi-client';
+import Util, * as $Util from '@alicloud/tea-util';
 import dayjs from 'dayjs';
+import { aliyunAccess } from '../private';
 import { DbUser } from '../types';
 
 /**用户最高等级 */
@@ -75,4 +79,55 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
   }
 
   return data;
+}
+
+/**
+ * 阿里云短信验证码服务
+ */
+export class AliyunCaptchaClient {
+  /**
+   * 使用AK&SK初始化账号Client
+   * @param accessKeyId
+   * @param accessKeySecret
+   * @return Client
+   * @throws Exception
+   */
+  static createClient(
+    accessKeyId: string,
+    accessKeySecret: string
+  ): Dysmsapi20170525 {
+    let config = new $OpenApi.Config({
+      // 必填，您的 AccessKey ID
+      accessKeyId,
+      // 必填，您的 AccessKey Secret
+      accessKeySecret,
+    });
+
+    // 访问的域名
+    config.endpoint = `dysmsapi.aliyuncs.com`;
+    return new Dysmsapi20170525(config);
+  }
+
+  static async main(data: { phoneNumber: string; code: number }): Promise<any> {
+    // 请确保代码运行环境设置了环境变量 ALIBABA_CLOUD_ACCESS_KEY_ID 和 ALIBABA_CLOUD_ACCESS_KEY_SECRET。
+    // 工程代码泄露可能会导致 AccessKey 泄露，并威胁账号下所有资源的安全性。以下代码示例使用环境变量获取 AccessKey 的方式进行调用，仅供参考，建议使用更安全的 STS 方式，更多鉴权访问方式请参见：https://help.aliyun.com/document_detail/378664.html
+    let client = AliyunCaptchaClient.createClient(
+      aliyunAccess.accessKeyId,
+      aliyunAccess.accessKeySecret
+    );
+    let sendSmsRequest = new $Dysmsapi20170525.SendSmsRequest({
+      signName: 'MgChat',
+      templateCode: 'SMS_461395552',
+      phoneNumbers: data.phoneNumber,
+      templateParam: `{"code":"${data.code}"}`,
+    });
+    let runtime = new $Util.RuntimeOptions({});
+    try {
+      // 复制代码运行请自行打印 API 的返回值
+      return await client.sendSmsWithOptions(sendSmsRequest, runtime);
+    } catch (error: any) {
+      // 如有需要，请打印 error
+      Util.assertAsString(error.message);
+    }
+  }
 }

@@ -78,3 +78,10 @@ export type DbApplyListInfo = {
   content?: string;
   expiredTime: number;
 };
+
+export type DbCaptchas = {
+  _id: ObjectId;
+  code: number;
+  phoneNumber: number;
+  expireTime: number;
+};

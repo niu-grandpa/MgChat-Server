@@ -1,4 +1,6 @@
+import { DbTable } from '../types';
 import { UseApiHandler } from './types';
+import { useDbCrud } from './useDbCrud';
 
 /**
  * useApiHandler
@@ -15,13 +17,6 @@ async function useApiHandler({
     const { target, check, must } = required;
     const map: Record<string, string[]> = {};
     let pass = true;
-
-    // 检查验证码是否有效
-    if (verifyCaptcha && !isCaptchaValid(verifyCaptcha)) {
-      response.status(500);
-      response.send('验证码无效');
-      return;
-    }
 
     // 检查字段是否缺失
     if (must && must.length) {
@@ -52,6 +47,12 @@ async function useApiHandler({
     }
   }
 
+  // 检查验证码是否有效
+  if (verifyCaptcha && !(await isCaptchaValid(verifyCaptcha))) {
+    response.send('验证码无效');
+    return;
+  }
+
   // 执行函数中间件
   try {
     while (middleware.length) {
@@ -69,8 +70,17 @@ function isAsyncFunction(fn: any) {
   return fn[Symbol.toStringTag] === 'AsyncFunction';
 }
 
-function isCaptchaValid(data: UseApiHandler['verifyCaptcha']): boolean {
-  return true;
+async function isCaptchaValid(
+  data: UseApiHandler['verifyCaptcha']
+): Promise<boolean> {
+  const { code, phoneNumber } = data!;
+  const { read } = useDbCrud();
+  return (
+    (await read({
+      table: DbTable.CAPTCHAS,
+      filter: { $and: [{ code }, { phoneNumber }] },
+    })) !== null
+  );
 }
 
 export { useApiHandler };

@@ -19,6 +19,7 @@ forgetPwApi.post('/forget', (request, response) => {
 
   useApiHandler({
     response,
+    verifyCaptcha: { phoneNumber, code },
     required: {
       target: request.body.data,
       must: fields,

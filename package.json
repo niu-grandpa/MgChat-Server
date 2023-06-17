@@ -24,6 +24,7 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
+    "@alicloud/dysmsapi20170525": "^2.0.23",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
