@@ -1,4 +1,5 @@
-import { DbTable } from '../types';
+import { DbTable, ResponseCode } from '../types';
+import { wrapperResult } from '../utils';
 import { UseApiHandler } from './types';
 import { useDbCrud } from './useDbCrud';
 
@@ -49,7 +50,7 @@ async function useApiHandler({
 
   // 检查验证码是否有效
   if (verifyCaptcha && !(await isCaptchaValid(verifyCaptcha))) {
-    response.send('验证码无效');
+    response.send(wrapperResult(null, ResponseCode.INVALID_CODE));
     return;
   }
 
@@ -76,10 +77,13 @@ async function isCaptchaValid(
   const { code, phoneNumber } = data!;
   const { read } = useDbCrud();
   return (
-    (await read({
-      table: DbTable.CAPTCHAS,
-      filter: { $and: [{ code }, { phoneNumber }] },
-    })) !== null
+    (await read(
+      {
+        table: DbTable.CAPTCHAS,
+        filter: { $and: [{ code }, { phoneNumber }] },
+      },
+      'findAll'
+    )) !== null
   );
 }
 

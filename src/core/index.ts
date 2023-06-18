@@ -71,8 +71,12 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
         // 那么多出来2天作为下一次升级的初始天数
         data.upgradeDays -= limit;
 
-        while (data.upgradeDays > 0) {
-          data.timeInfo.lastActiveTime += 24;
+        if (data.upgradeDays > 0) {
+          while (data.upgradeDays > 0) {
+            data.timeInfo.lastActiveTime += 24;
+          }
+        } else {
+          data.timeInfo.lastActiveTime = 0;
         }
       }
     }
@@ -108,7 +112,7 @@ export class AliyunCaptchaClient {
     return new Dysmsapi20170525(config);
   }
 
-  static async main(data: { phoneNumber: string; code: number }): Promise<any> {
+  static async main(data: { phoneNumber: string; code: string }): Promise<any> {
     // 请确保代码运行环境设置了环境变量 ALIBABA_CLOUD_ACCESS_KEY_ID 和 ALIBABA_CLOUD_ACCESS_KEY_SECRET。
     // 工程代码泄露可能会导致 AccessKey 泄露，并威胁账号下所有资源的安全性。以下代码示例使用环境变量获取 AccessKey 的方式进行调用，仅供参考，建议使用更安全的 STS 方式，更多鉴权访问方式请参见：https://help.aliyun.com/document_detail/378664.html
     let client = AliyunCaptchaClient.createClient(

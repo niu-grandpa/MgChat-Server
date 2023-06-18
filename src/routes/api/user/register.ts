@@ -21,7 +21,7 @@ const initUserData = () => ({
   city: '',
   age: 0,
   status: UserStatus.OFFLINE,
-  level: 0,
+  level: 1,
   gender: UserGender.NONE,
   credit: 200,
   privilege: 0,

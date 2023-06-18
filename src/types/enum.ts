@@ -19,6 +19,7 @@ export const enum ResponseCode {
   WRONG_PWD = 6,
   REPEAT_LOGIN = 7,
   NOT_PERMISSION = 8,
+  INVALID_CODE = 9,
 }
 
 export const ResponseMsg = {
@@ -32,6 +33,7 @@ export const ResponseMsg = {
   6: '密码错误',
   7: '当前用户已在线，无法重复登录',
   8: '权限不足',
+  9: '验证码无效',
 };
 
 export const enum UserStatus {

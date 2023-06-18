@@ -12,7 +12,7 @@ captchaApi
     const { phoneNumber } = request.body.data;
 
     // 验证码默认取当前时间戳后6位
-    let code = Date.now() % 1000000;
+    let code = (Date.now() % 1000000) + '';
 
     useApiHandler({
       response,
@@ -26,7 +26,7 @@ captchaApi
 
           const set = new Set(list.map(item => item.code));
           while (set.has(code)) {
-            code = ~~(Math.random() * 900000) + 100000;
+            code = ~~(Math.random() * 900000) + 100000 + '';
           }
         },
         async () => {

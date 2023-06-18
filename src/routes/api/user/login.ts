@@ -129,7 +129,7 @@ loginApi
    */
   .post('/login-with-phone', (request, response) => {
     const { phoneNumber, code } = request.body.data as LoginWithPhone;
-    const fields = ['uid', 'password', 'token'];
+    const fields = ['phoneNumber', 'code'];
     let newToken = '';
     useApiHandler({
       response,
@@ -141,10 +141,17 @@ loginApi
       },
       middleware: [
         async () => {
-          const { timeInfo, token, status } = (await read({
+          const data = (await read({
             table: DbTable.USER,
             filter: { phoneNumber },
           })) as unknown as DbUser.UserInfo;
+
+          if (!data) {
+            response.send(wrapperResult(data, ResponseCode.NO_ACCOUNT));
+            return false;
+          }
+
+          const { timeInfo, token, status } = data;
 
           if (isOnline(status, response)) {
             return false;
