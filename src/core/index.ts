@@ -38,8 +38,10 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
     while (t--) data.credit += 6;
   } else if (currentActiveMinutes > 0) {
     // 登录一个小时之内的按分钟转成小时
-    currentActiveHours = Number((currentActiveMinutes / 60).toFixed(1));
+    currentActiveHours = currentActiveMinutes / 60;
   }
+
+  currentActiveHours = Number(currentActiveHours.toFixed(1));
 
   // 更新总活跃时间
   data.timeInfo.activeTime += currentActiveHours;
@@ -47,10 +49,8 @@ export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
   // 用户未满级，执行升级算法
   if (level < userMaxLevel) {
     // 当活跃时间+上次临时累计的活跃时间
-    currentActiveHours += lastActiveTime;
-
     // 计算从登录到登出的时间是否大于等于1天
-    const payload = ~~(currentActiveHours / 24);
+    const payload = ~~((currentActiveHours + lastActiveTime) / 24);
 
     // 不到1天则累加到上次活跃时间
     if (payload < 1) {

@@ -41,6 +41,16 @@ export declare namespace DbGroup {
 }
 
 export declare namespace DbMessage {
+  type Record = {
+    uid: string;
+    record: RecordType[];
+  };
+  type RecordType = {
+    who: string;
+    icon: string;
+    nickname: string;
+    message: HistoryMessageType[];
+  };
   type HistoryMessageType = {
     cid: string;
     role: MessageRole;
@@ -49,15 +59,6 @@ export declare namespace DbMessage {
     hidden: boolean;
     isRead: boolean;
     createTime: number;
-  };
-  type RecordType = {
-    who: string;
-    createTime: number;
-    message: HistoryMessageType[];
-  };
-  type Record = {
-    uid: string;
-    record: RecordType[];
   };
 }
 
