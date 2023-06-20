@@ -42,10 +42,13 @@ loginApi
       },
       middleware: [
         async () => {
-          const data = (await read({
-            table: DbTable.USER,
-            filter: { token },
-          })) as unknown as DbUser.UserInfo;
+          const data = (await read(
+            {
+              table: DbTable.USER,
+              filter: { token },
+            },
+            'findAll'
+          )) as unknown as DbUser[];
           // 检查token是否存在对应用户
           if (data === null) {
             response.send(wrapperResult(null, ResponseCode.EXPIRED));
@@ -53,7 +56,7 @@ loginApi
           }
           // !检查token是否已过期，由客户端实现
           // 检查是否已在线
-          if (isOnline(data.status, response)) {
+          if (isOnline(data[0].status, response)) {
             return false;
           }
         },
@@ -68,7 +71,7 @@ loginApi
    */
   .post('/login-with-pwd', (request, response) => {
     const fields = ['uid', 'password'];
-    const { uid: id, password: pwdToken } = request.body.data as LoginWithPwd;
+    const { uid, password: pwdToken } = request.body.data as LoginWithPwd;
     // 解密密码
     const { password } = __jwtToken.decode(pwdToken) as { password: string };
 
@@ -83,40 +86,37 @@ loginApi
       },
       middleware: [
         async () => {
+          const data = (await read(
+            {
+              table: DbTable.USER,
+              filter: { uid },
+            },
+            'findAll'
+          )) as unknown as DbUser[];
           // 账号是否存在
-          if (
-            (await read({
-              table: DbTable.ACCOUNT,
-              filter: { uid: id },
-            })) === null
-          ) {
+          if (!data) {
             response.send(wrapperResult(null, ResponseCode.NO_ACCOUNT));
             return false;
           }
-        },
-        async () => {
-          const data = (await read({
-            table: DbTable.USER,
-            filter: { uid: id },
-          })) as unknown as DbUser.UserInfo;
+          const { timeInfo, token, status } = data[0];
           // 密码是否一致
-          if (password !== data.password) {
+          if (password !== password) {
             response.send(wrapperResult(null, ResponseCode.WRONG_PWD));
             return false;
           }
           // 是否已在线
-          if (isOnline(data.status, response)) {
+          if (isOnline(status, response)) {
             return false;
           }
           // token是否需要重置
-          newToken = isRestToken(newToken, data.timeInfo.expiredTime, {
-            uid: id,
+          newToken = isRestToken(token, timeInfo.expiredTime, {
+            uid,
             password,
           });
         },
         async () => {
           // 更新用户状态，登录时间
-          await userUpdate(response, { uid: id }, newToken);
+          await userUpdate(response, { uid }, newToken);
           // todo 通知其他好友已上线
         },
       ],
@@ -141,17 +141,20 @@ loginApi
       },
       middleware: [
         async () => {
-          const data = (await read({
-            table: DbTable.USER,
-            filter: { phoneNumber },
-          })) as unknown as DbUser.UserInfo;
+          const data = (await read(
+            {
+              table: DbTable.USER,
+              filter: { phoneNumber },
+            },
+            'findAll'
+          )) as unknown as DbUser[];
 
           if (!data) {
             response.send(wrapperResult(data, ResponseCode.NO_ACCOUNT));
             return false;
           }
 
-          const { timeInfo, token, status } = data;
+          const { timeInfo, token, status } = data[0];
 
           if (isOnline(status, response)) {
             return false;
@@ -214,6 +217,7 @@ const isOnline = (status: UserStatus, response: Response) => {
     response.send(wrapperResult(null, ResponseCode.REPEAT_LOGIN));
     return true;
   }
+  return false;
 };
 
 export default loginApi;

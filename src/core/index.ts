@@ -24,7 +24,7 @@ for (let i = 1; i <= userMaxLevel; i++) {
  * @param data
  * @returns
  */
-export function settlementUserLevelAndCredit(data: DbUser.UserInfo) {
+export function settlementUserLevelAndCredit(data: DbUser) {
   const { level, timeInfo } = data;
   const { loginTime, logoutTime, lastActiveTime } = timeInfo;
 

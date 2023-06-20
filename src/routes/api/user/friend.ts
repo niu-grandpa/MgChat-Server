@@ -14,7 +14,7 @@ interface QueryFields {
 }
 
 interface ApplyFields extends DbApplyListInfo {
-  who: string;
+  friend: string;
 }
 
 const friendApi = express.Router();
@@ -102,13 +102,13 @@ friendApi
    * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
    */
   .post('/new-apply', (request, response) => {
-    const { who, ...rest } = request.body.data as ApplyFields;
+    const { friend, ...rest } = request.body.data as ApplyFields;
     useApiHandler({
       response,
       required: {
         target: request.body.data,
-        must: ['who'],
-        check: [{ type: 'String', fields: ['who', 'content'] }],
+        must: ['friend'],
+        check: [{ type: 'String', fields: ['friend', 'content'] }],
       },
       middleware: [
         async () => {
@@ -118,7 +118,7 @@ friendApi
           await update({
             table: DbTable.APPLY,
             response,
-            filter: { who },
+            filter: { friend },
             update: { $addToSet: { list: rest } },
           });
         },
@@ -133,8 +133,8 @@ friendApi
    * @todo 添加打招呼消息
    */
   .post('/new-friend', (request, response) => {
-    const { who, content, uid } = request.body.data as ApplyFields;
-    const fields = ['who', 'content'];
+    const { friend, content, uid } = request.body.data as ApplyFields;
+    const fields = ['friend', 'content'];
     useApiHandler({
       response,
       required: {
@@ -143,8 +143,8 @@ friendApi
         check: [{ type: 'String', fields }],
       },
       middleware: [
-        async () => await addInfo(response, uid, who),
-        async () => await addInfo(response, who, uid),
+        async () => await addInfo(response, uid, friend),
+        async () => await addInfo(response, friend, uid),
       ],
     });
   })
@@ -162,7 +162,7 @@ const addInfo = async (response: Response, uid: string, friendUid: string) => {
   const friend = (await read({
     table: DbTable.USER,
     filter: { uid: friendUid },
-  })) as unknown as DbUser.UserInfo;
+  })) as unknown as DbUser;
 
   // 重置用户重要信息
   const newData = {

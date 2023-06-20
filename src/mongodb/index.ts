@@ -1,5 +1,5 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
-import { DB_TABLE_NAME, MyMongoDbURI, adminPwd, initUId } from '../private';
+import { DB_TABLE_NAME, MyMongoDbURI, initUId } from '../private';
 import { DbTable } from '../types';
 
 function runMongoClient(name: string) {
@@ -27,26 +27,17 @@ function createDatabase() {
     }
   });
 
-  // 初始化user表数据
-  const user = db.collection(DbTable.USER);
-  user.findOne({ uid: initUId }).then(res => {
-    if (res === null) {
-      user.insertOne({
-        uid: initUId,
-        password: adminPwd,
-        level: 12,
-        gender: 0,
-        friends: [],
-        groups: [],
-      });
-    }
-  });
-
   // 创建验证码集合，具有TTL索引，「createdAt」字段设置为文档的过期时间（秒）。
   // 新文档将在5分钟后从集合中删除。
   db.collection(DbTable.CAPTCHAS).createIndex(
     { createdAt: 1 },
     { expireAfterSeconds: 60 * 5 }
+  );
+
+  // 初始化消息数据保存30天后自动删除
+  db.collection(DbTable.MESSAGE).createIndex(
+    { createdAt: 1 },
+    { expireAfterSeconds: 2592000 }
   );
 
   return db;

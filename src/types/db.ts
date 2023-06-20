@@ -1,57 +1,50 @@
 import { ObjectId } from 'mongodb';
 import { MessageRole, UserStatus } from './enum';
 
-export declare namespace DbUser {
-  type UserInfo = {
-    icon: string;
-    city: string;
-    age: number;
-    token: string;
-    status: UserStatus;
-    level: number;
-    gender: number;
-    credit: number;
-    privilege: number;
-    upgradeDays: number;
-    nickname: string;
-    uid: string;
-    password: string;
-    phoneNumber: string;
-    friends: UserInfo[];
-    groups: DbGroup.GroupInfo[];
-    timeInfo: {
-      loginTime: number;
-      logoutTime: number;
-      activeTime: number;
-      createTime: number;
-      expiredTime: number;
-      lastActiveTime: number;
-    };
-  };
-}
-
-export declare namespace DbGroup {
-  type GroupInfo = {
-    gid: number;
-    name: string;
-    owner: DbUser.UserInfo;
-    member: DbUser.UserInfo[];
+export type DbUser = {
+  _id: ObjectId;
+  icon: string;
+  city: string;
+  age: number;
+  token: string;
+  status: UserStatus;
+  level: number;
+  gender: number;
+  credit: number;
+  privilege: number;
+  upgradeDays: number;
+  nickname: string;
+  uid: string;
+  password: string;
+  phoneNumber: string;
+  friends: DbUser[];
+  groups: DbGroup[];
+  timeInfo: {
+    loginTime: number;
+    logoutTime: number;
+    activeTime: number;
     createTime: number;
+    expiredTime: number;
+    lastActiveTime: number;
   };
-}
+};
 
-export declare namespace DbMessage {
-  type Record = {
-    uid: string;
-    record: RecordType[];
-  };
-  type RecordType = {
-    who: string;
-    icon: string;
-    nickname: string;
-    message: HistoryMessageType[];
-  };
-  type HistoryMessageType = {
+export type DbGroup = {
+  _id: ObjectId;
+  gid: number;
+  name: string;
+  owner: DbUser;
+  member: DbUser[];
+  createTime: number;
+};
+
+export type DbMessage = {
+  _id: ObjectId;
+  uid: string;
+  friend: string;
+  icon: string;
+  nickname: string;
+  logs: {
     cid: string;
     role: MessageRole;
     content: string;
@@ -59,8 +52,8 @@ export declare namespace DbMessage {
     hidden: boolean;
     isRead: boolean;
     createTime: number;
-  };
-}
+  }[];
+};
 
 export type DbAccount = {
   _id: ObjectId;
