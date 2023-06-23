@@ -214,6 +214,7 @@ const isRestToken = (
 
 const isOnline = (status: UserStatus, response: Response) => {
   if (status === UserStatus.ONLINE) {
+    response.status(200);
     response.send(wrapperResult(null, ResponseCode.REPEAT_LOGIN));
     return true;
   }

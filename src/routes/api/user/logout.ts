@@ -15,7 +15,7 @@ logoutApi.post('/logout', async (request, response) => {
     table: DbTable.USER,
     filter: { uid: request.body.data.uid },
   };
-  const user = (await read(common)) as unknown as DbUser;
+  const [user] = (await read(common, 'findAll')) as unknown as DbUser[];
 
   user.status = UserStatus.OFFLINE;
   user.timeInfo.logoutTime = Date.now();
@@ -25,7 +25,7 @@ logoutApi.post('/logout', async (request, response) => {
   await update({
     ...common,
     response,
-    update: { $set: user },
+    update: { $set: { ...user } },
   });
 });
 
