@@ -120,6 +120,7 @@ loginApi
           });
         },
         async () => {
+          console.log(11111);
           // 更新用户状态，登录时间
           await userUpdate(response, { uid }, newToken);
           // todo 通知其他好友已上线
