@@ -1,4 +1,4 @@
-import { DbTable, ResponseCode } from '../types';
+import { CollectionName, ResponseCode } from '../types';
 import { wrapperResult } from '../utils';
 import { UseApiHandler } from './types';
 import { useDbCrud } from './useDbCrud';
@@ -79,7 +79,7 @@ async function isCaptchaValid(
   return (
     (await read(
       {
-        table: DbTable.CAPTCHAS,
+        table: CollectionName.CAPTCHAS,
         filter: { $and: [{ code }, { phoneNumber }] },
       },
       'findAll'

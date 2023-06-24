@@ -1,7 +1,12 @@
 import express, { Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { useApiHandler, useDbCrud } from '../../../hooks';
-import { DbTable, DbUser, ResponseCode, UserStatus } from '../../../types';
+import {
+  CollectionName,
+  ResponseCode,
+  UserCollection,
+  UserStatus,
+} from '../../../types';
 import {
   JwtPayload as MyJwtPayload,
   jwtToken,
@@ -44,11 +49,11 @@ loginApi
         async () => {
           const data = (await read(
             {
-              table: DbTable.USER,
+              table: CollectionName.USERS,
               filter: { token },
             },
             'findAll'
-          )) as unknown as DbUser[];
+          )) as unknown as UserCollection[];
           // 检查token是否存在对应用户
           if (data === null) {
             response.send(wrapperResult(null, ResponseCode.EXPIRED));
@@ -88,11 +93,11 @@ loginApi
         async () => {
           const data = (await read(
             {
-              table: DbTable.USER,
+              table: CollectionName.USERS,
               filter: { uid },
             },
             'findAll'
-          )) as unknown as DbUser[];
+          )) as unknown as UserCollection[];
           // 账号是否存在
           if (!data) {
             response.send(wrapperResult(null, ResponseCode.NO_ACCOUNT));
@@ -143,11 +148,11 @@ loginApi
         async () => {
           const data = (await read(
             {
-              table: DbTable.USER,
+              table: CollectionName.USERS,
               filter: { phoneNumber },
             },
             'findAll'
-          )) as unknown as DbUser[];
+          )) as unknown as UserCollection[];
 
           if (!data) {
             response.send(wrapperResult(data, ResponseCode.NO_ACCOUNT));
@@ -190,12 +195,12 @@ const userUpdate = async (
   }
 
   await update({
-    table: DbTable.USER,
+    table: CollectionName.USERS,
     filter,
     update: { $set: newData },
   });
 
-  await read({ table: DbTable.USER, filter, response });
+  await read({ table: CollectionName.USERS, filter, response });
 };
 
 /**

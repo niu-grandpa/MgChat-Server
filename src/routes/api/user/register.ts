@@ -1,6 +1,11 @@
 import express from 'express';
 import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
-import { DbTable, ResponseCode, UserGender, UserStatus } from '../../../types';
+import {
+  CollectionName,
+  ResponseCode,
+  UserGender,
+  UserStatus,
+} from '../../../types';
 import { jwtToken, wrapperResult } from '../../../utils';
 
 interface RegisterFields {
@@ -26,8 +31,6 @@ const initUserData = () => ({
   credit: 200,
   privilege: 0,
   upgradeDays: 0,
-  friends: [],
-  groups: [],
   timeInfo: {
     loginTime: 0,
     logoutTime: 0,
@@ -54,7 +57,7 @@ registerApi.post('/register', (request, response) => {
     middleware: [
       async () => {
         const data = await read({
-          table: DbTable.USER,
+          table: CollectionName.USERS,
           filter: { phoneNumber },
         });
         if (data !== null) {
@@ -65,7 +68,7 @@ registerApi.post('/register', (request, response) => {
       async () => {
         uid = await useGenerateUid();
         await create({
-          table: DbTable.USER,
+          table: CollectionName.USERS,
           request,
           response,
           newData: {
@@ -78,7 +81,10 @@ registerApi.post('/register', (request, response) => {
           },
         });
         // 初始化新用户好友申请表数据
-        await create({ table: DbTable.APPLY, newData: { uid, list: [] } });
+        await create({
+          table: CollectionName.USER_APPLICATION,
+          newData: { uid, list: [] },
+        });
       },
     ],
   });

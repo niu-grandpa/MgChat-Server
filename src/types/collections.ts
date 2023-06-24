@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { MessageRole, UserStatus } from './enum';
 
-export type DbUser = {
+export type UserCollection = {
   _id: ObjectId;
   icon: string;
   city: string;
@@ -17,8 +17,6 @@ export type DbUser = {
   uid: string;
   password: string;
   phoneNumber: string;
-  friends: DbUser[];
-  groups: DbGroup[];
   timeInfo: {
     loginTime: number;
     logoutTime: number;
@@ -29,16 +27,23 @@ export type DbUser = {
   };
 };
 
-export type DbGroup = {
+export type GroupCollection = {
   _id: ObjectId;
   gid: number;
   name: string;
-  owner: DbUser;
-  member: DbUser[];
+  icon: string;
+  owner: UserCollection;
+  member: UserCollection[];
   createTime: number;
 };
 
-export type DbMessage = {
+export type FriendCollection = {
+  _id: ObjectId;
+  uid: string;
+  list: UserCollection;
+};
+
+export type MessageCollection = {
   _id: ObjectId;
   uid: string;
   friend: string;
@@ -55,25 +60,27 @@ export type DbMessage = {
   }[];
 };
 
-export type DbAccount = {
-  _id: ObjectId;
-  uid: string[];
-  key: 'allUids';
-};
-
-export type DbApply = {
+export type UuidCollection = {
   _id: ObjectId;
   uid: string;
-  list?: DbApplyListInfo[];
+  createTime: number;
 };
 
-export type DbApplyListInfo = {
+export type UserApplyCollection = {
+  _id: ObjectId;
   uid: string;
-  content?: string;
-  expiredTime: number;
+  list?: ApplicationList[];
 };
 
-export type DbCaptchas = {
+export type ApplicationList = {
+  uid: string;
+  nickname: string;
+  icon: string;
+  message?: string;
+  createdAt: Date;
+};
+
+export type CaptchaCollection = {
   _id: ObjectId;
   code: string;
   phoneNumber: number;

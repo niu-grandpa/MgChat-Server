@@ -1,8 +1,12 @@
 import { Router } from 'express';
-import { AliyunCaptchaClient } from '../../core';
-import { useApiHandler, useDbCrud } from '../../hooks';
-import { DbCaptchas, DbTable, ResponseCode } from '../../types';
-import { wrapperResult } from '../../utils';
+import { AliyunCaptchaClient } from '../../../core';
+import { useApiHandler, useDbCrud } from '../../../hooks';
+import {
+  CaptchaCollection,
+  CollectionName,
+  ResponseCode,
+} from '../../../types';
+import { wrapperResult } from '../../../utils';
 
 const { read, update, create } = useDbCrud();
 const captchaApi = Router();
@@ -20,9 +24,9 @@ captchaApi
         async () => {
           // 随机生成与数据库中所有未过期的验证码不同的数字
           const list = (await read(
-            { table: DbTable.CAPTCHAS },
+            { table: CollectionName.CAPTCHAS },
             'findAll'
-          )) as DbCaptchas[];
+          )) as CaptchaCollection[];
 
           const set = new Set(list.map(item => item.code));
           while (set.has(code)) {
@@ -49,7 +53,7 @@ captchaApi
         async () => {
           // 验证码存入数据库
           await create({
-            table: DbTable.CAPTCHAS,
+            table: CollectionName.CAPTCHAS,
             newData: { createdAt: new Date(), code, phoneNumber },
           });
         },

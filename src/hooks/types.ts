@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { Document, Filter, UpdateFilter } from 'mongodb';
-import { DbTable } from '../types';
+import { CollectionName } from '../types';
 export interface UseApiHandler {
   /**接口response */
   response: Response;
@@ -19,7 +19,7 @@ export interface UseApiHandler {
 }
 
 export interface UseCrud {
-  table: DbTable;
+  table: CollectionName;
   response?: Response;
   request?: Request;
   filter?: Filter<Document>;

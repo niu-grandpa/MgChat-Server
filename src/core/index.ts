@@ -3,7 +3,7 @@ import * as $OpenApi from '@alicloud/openapi-client';
 import Util, * as $Util from '@alicloud/tea-util';
 import dayjs from 'dayjs';
 import { aliyunAccess } from '../private';
-import { DbUser } from '../types';
+import { UserCollection } from '../types';
 
 /**用户最高等级 */
 export const userMaxLevel = 12;
@@ -24,7 +24,7 @@ for (let i = 1; i <= userMaxLevel; i++) {
  * @param data
  * @returns
  */
-export function settlementUserLevelAndCredit(data: DbUser) {
+export function settlementUserLevelAndCredit(data: UserCollection) {
   const { level, timeInfo } = data;
   const { loginTime, logoutTime, lastActiveTime } = timeInfo;
 

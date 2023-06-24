@@ -1,6 +1,10 @@
 import express from 'express';
 import { useApiHandler, useDbCrud } from '../../../hooks';
-import { ClientQueryFields, DbTable, ResponseCode } from '../../../types';
+import {
+  ClientQueryFields,
+  CollectionName,
+  ResponseCode,
+} from '../../../types';
 import { jwtToken, wrapperResult } from '../../../utils';
 
 const forgetPwApi = express.Router();
@@ -13,7 +17,7 @@ forgetPwApi.post('/forget', (request, response) => {
     .data as ClientQueryFields;
 
   const common = {
-    table: DbTable.USER,
+    table: CollectionName.USERS,
     filter: { phoneNumber },
   };
 

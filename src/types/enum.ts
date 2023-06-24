@@ -1,10 +1,11 @@
-export const enum DbTable {
-  USER = 'user',
-  GROUP = 'group',
-  MESSAGE = 'message',
-  ACCOUNT = 'account',
-  APPLY = 'apply',
+export const enum CollectionName {
+  USERS = 'users',
+  GROUPS = 'groups',
+  MESSAGE_LOGS = 'message_logs',
+  UUID = 'uuid',
+  USER_APPLICATION = 'user_application',
   CAPTCHAS = 'captchs',
+  FRIENDS = 'friends',
 }
 
 /** 接口调用后的状态码 */

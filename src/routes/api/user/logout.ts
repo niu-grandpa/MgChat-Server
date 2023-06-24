@@ -1,6 +1,6 @@
 import express from 'express';
 import { useDbCrud } from '../../../hooks';
-import { DbTable, DbUser, UserStatus } from '../../../types';
+import { CollectionName, UserCollection, UserStatus } from '../../../types';
 import { settlementUserLevelAndCredit } from './../../../core/index';
 
 const logoutApi = express.Router();
@@ -12,10 +12,10 @@ const { read, update } = useDbCrud();
  */
 logoutApi.post('/logout', async (request, response) => {
   const common = {
-    table: DbTable.USER,
+    table: CollectionName.USERS,
     filter: { uid: request.body.data.uid },
   };
-  const [user] = (await read(common, 'findAll')) as unknown as DbUser[];
+  const [user] = (await read(common, 'findAll')) as unknown as UserCollection[];
 
   user.status = UserStatus.OFFLINE;
   user.timeInfo.logoutTime = Date.now();

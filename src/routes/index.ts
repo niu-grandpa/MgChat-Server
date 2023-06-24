@@ -1,5 +1,6 @@
 import { Express } from 'express';
 import captchaApi from './api/captcha';
+import FriendApi from './api/friend';
 import MessageApi from './api/message';
 import UserApi from './api/user';
 
@@ -33,6 +34,9 @@ function onRegisterApi(app: Express) {
 
   // 验证码接口
   app.use('/api/captcha', captchaApi);
+
+  // 好友接口
+  app.use('/api/friend', FriendApi);
 }
 
 export default onRegisterApi;

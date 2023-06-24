@@ -1,4 +1,4 @@
-import { DbUser } from './db';
+import { UserCollection } from './collections';
 import { ResponseCode, UserStatus } from './enum';
 
 /** 展示客户端传递给api接口的所有参数字段 */
@@ -12,7 +12,7 @@ export interface ClientQueryFields {
   status: UserStatus;
   phoneNumber: string;
   withdraw: boolean;
-  timeInfo: DbUser['timeInfo'];
+  timeInfo: UserCollection['timeInfo'];
 }
 
 /** 接口请求结果 */

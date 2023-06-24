@@ -1,3 +1,3 @@
 export * from './api';
-export * from './db';
+export * from './collections';
 export * from './enum';

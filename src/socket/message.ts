@@ -22,8 +22,8 @@ function messageService(io: Server, socket: Socket) {
    * 好友聊天
    */
   socket
-    .on('join-frd', (friend: string) => {
-      socket.join(friend);
+    .on('join-frd', (room: string | string[]) => {
+      socket.join(room);
     })
     .on('send-msg-to-frd', (data: ReceivedData) => {
       const { uid, friend } = data;
@@ -48,10 +48,10 @@ function messageService(io: Server, socket: Socket) {
 
       // 存入数据库
     })
-    .on('close-chat', (id: string) => {
-      socket.leave(id);
-      socket.rooms.delete(id);
-      console.log(id, 'disconnected');
+    .on('close-chat', (room: string) => {
+      socket.leave(room);
+      socket.rooms.delete(room);
+      console.log(room, 'disconnected');
     });
 
   /**

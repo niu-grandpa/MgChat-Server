@@ -1,10 +1,10 @@
-import dayjs from 'dayjs';
 import express, { Response } from 'express';
 import { Document, Filter } from 'mongodb';
+import { userMaxLevel } from '../../../core/index';
 import { useApiHandler, useDbCrud } from '../../../hooks';
-import { DbTable, UserGender, UserStatus } from '../../../types';
-import { userMaxLevel } from './../../../core/index';
-import { DbApplyListInfo, DbUser } from './../../../types/db';
+import db from '../../../mongodb';
+import { CollectionName, UserGender, UserStatus } from '../../../types';
+import { ApplicationList, UserCollection } from '../../../types/collections';
 
 interface QueryFields {
   keywords: string;
@@ -13,9 +13,9 @@ interface QueryFields {
   status?: UserStatus;
 }
 
-interface ApplyFields extends DbApplyListInfo {
+type ApplyFields = {
   friend: string;
-}
+} & ApplicationList;
 
 const friendApi = express.Router();
 const { read, update } = useDbCrud();
@@ -23,15 +23,27 @@ const phoneExc = /^1(3\d|4[5-9]|5[0-35-9]|6[2567]|7[0-8]|8\d|9[0-35-9])\d{8}$/;
 
 friendApi
   /**
+   * 查询用户好友
+   */
+  .get('/list', async (request, response) => {
+    const { uid, phoneNumber } = request.query;
+    const filter = uid ? { uid } : { phoneNumber };
+    await read({
+      table: CollectionName.FRIENDS,
+      response,
+      filter,
+    });
+  })
+
+  /**
    * 获取用户是否有新好友申请
    * 需要筛选掉已过期的申请
    */
   .get('/has-apply', async (request, response) => {
     await read({
-      table: DbTable.APPLY,
+      table: CollectionName.USER_APPLICATION,
       response,
       filter: { uid: request.query.uid },
-      options: { list: { $elemMatch: { expiredTime: { $gt: Date.now() } } } },
     });
   })
 
@@ -40,7 +52,7 @@ friendApi
    * 允许通过用户名/昵称/手机号/关键字模糊查询用户表
    * 可选附加条件：性别/年龄/优先在线
    */
-  .get('/search-friends', (request, response) => {
+  .get('/search', (request, response) => {
     const { keywords, ageRange, gender, status } =
       request.query as unknown as QueryFields;
 
@@ -85,7 +97,7 @@ friendApi
         async () => {
           await read(
             {
-              table: DbTable.USER,
+              table: CollectionName.USERS,
               response,
               filter,
             },
@@ -103,24 +115,29 @@ friendApi
    */
   .post('/new-apply', (request, response) => {
     const { friend, ...rest } = request.body.data as ApplyFields;
+    const fields = ['friend', 'nickname', 'icon'];
     useApiHandler({
       response,
       required: {
         target: request.body.data,
-        must: ['friend'],
-        check: [{ type: 'String', fields: ['friend', 'content'] }],
+        must: fields,
+        check: [{ type: 'String', fields }],
       },
       middleware: [
         async () => {
-          // 设置申请有效期为3天
-          rest.expiredTime = dayjs().add(3, 'day').valueOf();
+          rest.createdAt = new Date();
           // 向目标用户添加申请方用户账号
           await update({
-            table: DbTable.APPLY,
+            table: CollectionName.USER_APPLICATION,
             response,
             filter: { friend },
             update: { $addToSet: { list: rest } },
           });
+          db.collection(CollectionName.USER_APPLICATION).createIndex(
+            { 'list.createdAt': 1 },
+            // 设置申请有效期为3天
+            { expireAfterSeconds: 1000 * 60 * 60 * 24 * 3 }
+          );
         },
       ],
     });
@@ -132,9 +149,9 @@ friendApi
    * 客户端调用此接口后需再次获取好友列表
    * @todo 添加打招呼消息
    */
-  .post('/new-friend', (request, response) => {
-    const { friend, content, uid } = request.body.data as ApplyFields;
-    const fields = ['friend', 'content'];
+  .post('/add', (request, response) => {
+    const { friend, message, uid } = request.body.data as ApplyFields;
+    const fields = ['friend', 'nickname', 'icon'];
     useApiHandler({
       response,
       required: {
@@ -143,8 +160,8 @@ friendApi
         check: [{ type: 'String', fields }],
       },
       middleware: [
-        async () => await addInfo(response, uid, friend),
-        async () => await addInfo(response, friend, uid),
+        async () => await addToEach(response, uid, friend),
+        async () => await addToEach(response, friend, uid),
       ],
     });
   })
@@ -153,32 +170,34 @@ friendApi
    * 删除好友
    * 在用户的friends数组里将目标好友标记已删除，方便下次恢复数据（vip用户）。
    */
-  .delete('/remove-friend', async (request, response) => {});
+  .delete('/remove', async (request, response) => {});
 
 export default friendApi;
 
-const addInfo = async (response: Response, uid: string, friendUid: string) => {
+const addToEach = async (
+  response: Response,
+  uid: string,
+  friendUid: string
+) => {
   // 添加对方用户
   const friend = (await read({
-    table: DbTable.USER,
+    table: CollectionName.USERS,
     filter: { uid: friendUid },
-  })) as unknown as DbUser;
+  })) as unknown as UserCollection;
 
   // 重置用户重要信息
   const newData = {
     ...friend,
     token: '',
     credit: 0,
-    friends: [],
-    groups: [],
     password: '',
     timeInfo: {},
   };
 
   await update({
-    table: DbTable.USER,
+    table: CollectionName.FRIENDS,
     filter: { uid },
     response,
-    update: { $pull: { friends: { newData } } },
+    update: { $pull: { list: { newData } } },
   });
 };
