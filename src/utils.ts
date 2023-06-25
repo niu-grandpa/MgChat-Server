@@ -24,11 +24,8 @@ export const signData = (
   return token;
 };
 
-export const verifyToken = <T>(
-  token: string,
-  callback: (data: T) => void,
-  key?: 'password'
-) => {
+export const verifyToken = <T>(token: string, key?: 'password') => {
+  let res: T | null = null;
   jwt.verify(
     token,
     key === 'password' ? PWD_SECRET_KEY : SECRET_KEY,
@@ -37,9 +34,10 @@ export const verifyToken = <T>(
         console.error(err.message);
         return;
       }
-      callback(decoded as T);
+      res = decoded as T;
     }
   );
+  return res;
 };
 
 export function createHash() {

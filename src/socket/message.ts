@@ -18,8 +18,8 @@ type SendMessage = {
   type: MessageType;
   from: string;
   to: string;
+  cid: string;
   detail: {
-    cid: string;
     icon: string;
     nickname: string;
     content: string;
@@ -49,15 +49,13 @@ function messageService(io: Server, socket: Socket) {
    * 只监听message方法进行消息中转收发，方便使用postman测试
    * 更完善的程序在后面的注释掉了
    */
-  const listener = ({ type, from, to, ...rest }: ReceivedDataType) => {
+  const onMessage = ({ type, from, to, ...rest }: ReceivedDataType) => {
     const payload: SendMessage = {
       type,
       from,
       to,
-      detail: {
-        ...rest,
-        cid: getHash(),
-      },
+      detail: rest,
+      cid: getHash(),
       createTime: Date.now(),
     };
     // 为确保数据安全将其加密传输
@@ -65,7 +63,13 @@ function messageService(io: Server, socket: Socket) {
     io.emit('receive-message', token);
     io.emit('send-message-ok', token);
   };
-  socket.on('message', listener);
+
+  const onSaveMessage = () => {
+    socket.emit('');
+  };
+
+  socket.on('message', onMessage);
+  socket.on('save-message', onSaveMessage);
 
   /**
    * 好友聊天

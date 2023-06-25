@@ -1,7 +1,13 @@
 import express from 'express';
 import { useDbCrud } from '../../../hooks';
-import { CollectionName, UserCollection, UserStatus } from '../../../types';
+import {
+  CollectionName,
+  ResponseCode,
+  UserCollection,
+  UserStatus,
+} from '../../../types';
 import { settlementUserLevelAndCredit } from './../../../core/index';
+import { wrapperResult } from './../../../utils';
 
 const logoutApi = express.Router();
 const { read, update } = useDbCrud();
@@ -16,6 +22,11 @@ logoutApi.post('/logout', async (request, response) => {
     filter: { uid: request.body.data.uid },
   };
   const user = (await read(common)) as unknown as UserCollection;
+
+  if (user.status === UserStatus.OFFLINE) {
+    response.send(wrapperResult(null, ResponseCode.USER_IS_OFFLINE));
+    return;
+  }
 
   user.status = UserStatus.OFFLINE;
   user.timeInfo.logoutTime = Date.now();

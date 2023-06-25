@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { MessageRole, UserGender, UserStatus } from './enum';
+import { UserGender, UserStatus } from './enum';
 
 export type UserCollection = {
   _id: ObjectId;
@@ -51,11 +51,12 @@ export type MessageCollection = {
   nickname: string;
   logs: {
     cid: string;
-    role: MessageRole;
+    from: string;
+    to: string;
     content: string;
     image: string;
     hidden: boolean;
-    isRead: boolean;
+    read: boolean;
     createTime: number;
   }[];
 };

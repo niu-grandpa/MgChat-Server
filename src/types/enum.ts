@@ -21,6 +21,7 @@ export const enum ResponseCode {
   REPEAT_LOGIN = 7,
   NOT_PERMISSION = 8,
   INVALID_CODE = 9,
+  USER_IS_OFFLINE = 10,
 }
 
 export const ResponseMsg = {
@@ -32,9 +33,10 @@ export const ResponseMsg = {
   4: '未查询到相关数据',
   5: '账号错误',
   6: '密码错误',
-  7: '当前用户已在线，无法重复登录',
+  7: '当前用户已在线',
   8: '权限不足',
   9: '验证码无效',
+  10: '用户已离线',
 };
 
 export const enum UserStatus {

@@ -71,16 +71,9 @@ loginApi
     const fields = ['uid', 'password'];
     const { uid, password: pwdToken } = request.body.data as LoginWithPwd;
 
-    // 解密密码
-    let password = '';
-    verifyToken(
-      pwdToken,
-      (res: { password: string }) => (password = res.password),
-      'password'
-    );
-
     let newToken = '';
-
+    // @ts-ignore 解密密码
+    let { password } = verifyToken(pwdToken, 'password')!;
     useApiHandler({
       response,
       required: {
@@ -182,10 +175,9 @@ const userUpdate = async (
 
   if (newToken !== '') {
     newData['token'] = newToken;
-    verifyToken(
-      newToken,
-      (data: JwtPayload) => (newData['timeInfo.expiredTime'] = data.exp)
-    );
+    newData['timeInfo.expiredTime'] = (
+      verifyToken(newToken) as unknown as JwtPayload
+    ).exp;
   }
 
   await update({
