@@ -55,15 +55,21 @@ async function useApiHandler({
   }
 
   // 执行函数中间件
-  try {
-    while (middleware.length) {
-      const fn = middleware.shift()!;
-      if ((isAsyncFunction(fn) && (await fn()) === false) || fn() === false) {
-        break;
+  while (middleware.length) {
+    const fn = middleware.shift()!;
+    let res: boolean | unknown;
+
+    try {
+      if (isAsyncFunction(fn)) {
+        res = await fn();
+      } else {
+        res = fn();
       }
+    } catch (e) {
+      console.error(`[useApiHandler] error: ${e}`);
     }
-  } catch (e) {
-    console.error(`[useApiHandler] error: ${e}`);
+
+    if (res === false) break;
   }
 }
 

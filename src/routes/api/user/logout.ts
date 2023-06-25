@@ -15,7 +15,7 @@ logoutApi.post('/logout', async (request, response) => {
     table: CollectionName.USERS,
     filter: { uid: request.body.data.uid },
   };
-  const [user] = (await read(common, 'findAll')) as unknown as UserCollection[];
+  const user = (await read(common)) as unknown as UserCollection;
 
   user.status = UserStatus.OFFLINE;
   user.timeInfo.logoutTime = Date.now();

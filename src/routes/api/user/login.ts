@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import express, { Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { useApiHandler, useDbCrud } from '../../../hooks';
@@ -7,11 +8,7 @@ import {
   UserCollection,
   UserStatus,
 } from '../../../types';
-import {
-  JwtPayload as MyJwtPayload,
-  jwtToken,
-  wrapperResult,
-} from '../../../utils';
+import { signData, verifyToken, wrapperResult } from '../../../utils';
 
 type LoginWithPwd = {
   uid: string;
@@ -25,7 +22,6 @@ type LoginWithPhone = {
 
 const loginApi = express.Router();
 const { read, update } = useDbCrud();
-const __jwtToken = jwtToken();
 
 /**
  * 实现token登录、密码登录、手机验证码登录
@@ -47,13 +43,10 @@ loginApi
       },
       middleware: [
         async () => {
-          const data = (await read(
-            {
-              table: CollectionName.USERS,
-              filter: { token },
-            },
-            'findAll'
-          )) as unknown as UserCollection[];
+          const data = (await read({
+            table: CollectionName.USERS,
+            filter: { token },
+          })) as unknown as UserCollection;
           // 检查token是否存在对应用户
           if (data === null) {
             response.send(wrapperResult(null, ResponseCode.EXPIRED));
@@ -61,7 +54,7 @@ loginApi
           }
           // !检查token是否已过期，由客户端实现
           // 检查是否已在线
-          if (isOnline(data[0].status, response)) {
+          if (isOnline(data.status, response) === 7) {
             return false;
           }
         },
@@ -77,8 +70,14 @@ loginApi
   .post('/login-with-pwd', (request, response) => {
     const fields = ['uid', 'password'];
     const { uid, password: pwdToken } = request.body.data as LoginWithPwd;
+
     // 解密密码
-    const { password } = __jwtToken.decode(pwdToken) as { password: string };
+    let password = '';
+    verifyToken(
+      pwdToken,
+      (res: { password: string }) => (password = res.password),
+      'password'
+    );
 
     let newToken = '';
 
@@ -91,26 +90,23 @@ loginApi
       },
       middleware: [
         async () => {
-          const data = (await read(
-            {
-              table: CollectionName.USERS,
-              filter: { uid },
-            },
-            'findAll'
-          )) as unknown as UserCollection[];
+          const data = (await read({
+            table: CollectionName.USERS,
+            filter: { uid },
+          })) as unknown as UserCollection;
           // 账号是否存在
           if (!data) {
             response.send(wrapperResult(null, ResponseCode.NO_ACCOUNT));
             return false;
           }
-          const { timeInfo, token, status } = data[0];
+          const { timeInfo, token, status } = data;
           // 密码是否一致
           if (password !== password) {
             response.send(wrapperResult(null, ResponseCode.WRONG_PWD));
             return false;
           }
           // 是否已在线
-          if (isOnline(status, response)) {
+          if (isOnline(status, response) === 7) {
             return false;
           }
           // token是否需要重置
@@ -120,7 +116,6 @@ loginApi
           });
         },
         async () => {
-          console.log(11111);
           // 更新用户状态，登录时间
           await userUpdate(response, { uid }, newToken);
           // todo 通知其他好友已上线
@@ -147,22 +142,19 @@ loginApi
       },
       middleware: [
         async () => {
-          const data = (await read(
-            {
-              table: CollectionName.USERS,
-              filter: { phoneNumber },
-            },
-            'findAll'
-          )) as unknown as UserCollection[];
+          const data = (await read({
+            table: CollectionName.USERS,
+            filter: { phoneNumber },
+          })) as unknown as UserCollection;
 
           if (!data) {
             response.send(wrapperResult(data, ResponseCode.NO_ACCOUNT));
             return false;
           }
 
-          const { timeInfo, token, status } = data[0];
+          const { timeInfo, token, status } = data;
 
-          if (isOnline(status, response)) {
+          if (isOnline(status, response) === 7) {
             return false;
           }
           newToken = isRestToken(token, timeInfo.expiredTime, {
@@ -190,9 +182,10 @@ const userUpdate = async (
 
   if (newToken !== '') {
     newData['token'] = newToken;
-    __jwtToken.verify(newToken, (_, decoded) => {
-      newData['timeInfo.expiredTime'] = (decoded as JwtPayload).exp;
-    });
+    verifyToken(
+      newToken,
+      (data: JwtPayload) => (newData['timeInfo.expiredTime'] = data.exp)
+    );
   }
 
   await update({
@@ -210,10 +203,15 @@ const userUpdate = async (
 const isRestToken = (
   token: string,
   expiredTime: number,
-  payload: MyJwtPayload
+  payload: Partial<{
+    uid: string;
+    code: string;
+    password: string;
+    phoneNumber: string;
+  }>
 ) => {
   if (!token || expiredTime < Date.now()) {
-    return __jwtToken.set(payload);
+    return signData(payload, undefined, dayjs().add(1, 'month').valueOf());
   }
   return '';
 };
@@ -222,9 +220,10 @@ const isOnline = (status: UserStatus, response: Response) => {
   if (status === UserStatus.ONLINE) {
     response.status(200);
     response.send(wrapperResult(null, ResponseCode.REPEAT_LOGIN));
-    return true;
+    return 7;
+  } else {
+    return false;
   }
-  return false;
 };
 
 export default loginApi;

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import express from 'express';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import {
@@ -5,7 +6,7 @@ import {
   CollectionName,
   ResponseCode,
 } from '../../../types';
-import { jwtToken, wrapperResult } from '../../../utils';
+import { signData, wrapperResult } from '../../../utils';
 
 const forgetPwApi = express.Router();
 const { read, update } = useDbCrud();
@@ -44,7 +45,11 @@ forgetPwApi.post('/forget', (request, response) => {
             $set: {
               code,
               password,
-              token: jwtToken().set({ phoneNumber, password, code }),
+              token: signData(
+                { phoneNumber, password, code },
+                undefined,
+                dayjs().add(1, 'month').valueOf()
+              ),
             },
           },
         });

@@ -34,10 +34,10 @@ function createDatabase() {
     { expireAfterSeconds: 60 * 5 }
   );
 
-  // 初始化消息数据保存30天后自动删除
-  db.collection(CollectionName.MESSAGE_LOGS).createIndex(
+  // 用户发起的好友申请3天有效
+  db.collection(CollectionName.USER_APPLICATION).createIndex(
     { createdAt: 1 },
-    { expireAfterSeconds: 2592000 }
+    { expireAfterSeconds: 259200 }
   );
 
   return db;

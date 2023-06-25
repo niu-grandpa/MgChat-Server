@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import express from 'express';
 import { useApiHandler, useDbCrud, useGenerateUid } from '../../../hooks';
 import {
@@ -6,7 +7,7 @@ import {
   UserGender,
   UserStatus,
 } from '../../../types';
-import { jwtToken, wrapperResult } from '../../../utils';
+import { signData, wrapperResult } from '../../../utils';
 
 interface RegisterFields {
   nickname: string;
@@ -67,6 +68,13 @@ registerApi.post('/register', (request, response) => {
       },
       async () => {
         uid = await useGenerateUid();
+      },
+      async () => {
+        const token = signData(
+          { phoneNumber, password, code },
+          undefined,
+          dayjs().add(1, 'month').valueOf()
+        );
         await create({
           table: CollectionName.USERS,
           request,
@@ -75,15 +83,10 @@ registerApi.post('/register', (request, response) => {
             uid,
             password,
             phoneNumber,
-            token: jwtToken().set({ phoneNumber, password, code }),
+            token,
             ...initUserData(),
             ...rest,
           },
-        });
-        // 初始化新用户好友申请表数据
-        await create({
-          table: CollectionName.USER_APPLICATION,
-          newData: { uid, list: [] },
         });
       },
     ],

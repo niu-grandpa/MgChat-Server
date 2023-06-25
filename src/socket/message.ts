@@ -1,4 +1,6 @@
+import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
+import { SECRET_KEY } from '../private';
 import { MessageType } from '../types';
 import { createHash } from '../utils';
 
@@ -48,7 +50,7 @@ function messageService(io: Server, socket: Socket) {
    * 更完善的程序在后面的注释掉了
    */
   const listener = ({ type, from, to, ...rest }: ReceivedDataType) => {
-    const sendData: SendMessage = {
+    const payload: SendMessage = {
       type,
       from,
       to,
@@ -58,8 +60,10 @@ function messageService(io: Server, socket: Socket) {
       },
       createTime: Date.now(),
     };
-    io.emit('receive-message', sendData);
-    io.emit('send-message-ok', sendData);
+    // 为确保数据安全将其加密传输
+    const token = jwt.sign(payload, SECRET_KEY);
+    io.emit('receive-message', token);
+    io.emit('send-message-ok', token);
   };
   socket.on('message', listener);
 

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { MessageRole, UserStatus } from './enum';
+import { MessageRole, UserGender, UserStatus } from './enum';
 
 export type UserCollection = {
   _id: ObjectId;
@@ -68,16 +68,15 @@ export type UuidCollection = {
 
 export type UserApplyCollection = {
   _id: ObjectId;
-  uid: string;
-  list?: ApplicationList[];
-};
-
-export type ApplicationList = {
-  uid: string;
+  /**申请者 */
+  applicant: string;
+  /**被申请者 */
+  respondent: string;
   nickname: string;
   icon: string;
-  message?: string;
-  createdAt: Date;
+  gender: UserGender;
+  message: string;
+  createTime: number;
 };
 
 export type CaptchaCollection = {

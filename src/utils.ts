@@ -1,48 +1,46 @@
-import dayjs from 'dayjs';
 import jwt from 'jsonwebtoken';
+import { PWD_SECRET_KEY, SECRET_KEY } from './private';
 import { ResponseCode, ResponseMsg } from './types';
 
-export type JwtPayload = Partial<{
-  uid: string;
-  code: string;
-  password: string;
-  phoneNumber: string;
-}>;
-
-export function wrapperResult(data: any, status: ResponseCode) {
+export const wrapperResult = (data: any, status: ResponseCode) => {
   const result = {
     code: status,
     msg: ResponseMsg[status!],
     data,
   };
   return result;
-}
+};
 
-/**
- * JWT生成用户token
- *
- * 注意：桌面应用不存在通过url访问页面，因此token的作用在于登录验证
- *
- * @param key uid或phoneNumber
- */
-export function jwtToken() {
-  //密钥
-  const SECRET_KEY = 'Z99w0t772r3h';
+export const signData = (
+  payload: any,
+  key?: 'password',
+  expiresIn?: number
+) => {
+  const token = jwt.sign(
+    payload,
+    key === 'password' ? PWD_SECRET_KEY : SECRET_KEY,
+    { expiresIn }
+  );
+  return token;
+};
 
-  return {
-    set: (payload: JwtPayload) =>
-      jwt.sign(payload, SECRET_KEY, {
-        expiresIn: dayjs().add(1, 'month').valueOf(),
-      }),
-
-    verify: (
-      token: string,
-      callback?: jwt.VerifyCallback<string | jwt.JwtPayload> | undefined
-    ) => jwt.verify(token, SECRET_KEY, { algorithms: ['HS256'] }, callback),
-
-    decode: (token: string) => jwt.decode(token),
-  };
-}
+export const verifyToken = <T>(
+  token: string,
+  callback: (data: T) => void,
+  key?: 'password'
+) => {
+  jwt.verify(
+    token,
+    key === 'password' ? PWD_SECRET_KEY : SECRET_KEY,
+    (err, decoded) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      callback(decoded as T);
+    }
+  );
+};
 
 export function createHash() {
   //产生一个hash值，只有数字，规则和java的hashcode规则相同

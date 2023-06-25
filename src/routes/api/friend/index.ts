@@ -2,9 +2,11 @@ import express, { Response } from 'express';
 import { Document, Filter } from 'mongodb';
 import { userMaxLevel } from '../../../core/index';
 import { useApiHandler, useDbCrud } from '../../../hooks';
-import db from '../../../mongodb';
 import { CollectionName, UserGender, UserStatus } from '../../../types';
-import { ApplicationList, UserCollection } from '../../../types/collections';
+import {
+  UserApplyCollection,
+  UserCollection,
+} from '../../../types/collections';
 
 interface QueryFields {
   keywords: string;
@@ -12,10 +14,6 @@ interface QueryFields {
   gender?: UserGender;
   status?: UserStatus;
 }
-
-type ApplyFields = {
-  friend: string;
-} & ApplicationList;
 
 const friendApi = express.Router();
 const { read, update } = useDbCrud();
@@ -114,8 +112,9 @@ friendApi
    * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
    */
   .post('/new-apply', (request, response) => {
-    const { friend, ...rest } = request.body.data as ApplyFields;
-    const fields = ['friend', 'nickname', 'icon'];
+    const { applicant, respondent, ...rest } = request.body
+      .data as UserApplyCollection;
+    const fields = ['applicant', 'respondent', 'gender', 'nickname', 'icon'];
     useApiHandler({
       response,
       required: {
@@ -125,19 +124,12 @@ friendApi
       },
       middleware: [
         async () => {
-          rest.createdAt = new Date();
-          // 向目标用户添加申请方用户账号
           await update({
             table: CollectionName.USER_APPLICATION,
             response,
-            filter: { friend },
-            update: { $addToSet: { list: rest } },
+            filter: { respondent },
+            update: { $set: { applicant, respondent, ...rest } },
           });
-          db.collection(CollectionName.USER_APPLICATION).createIndex(
-            { 'list.createdAt': 1 },
-            // 设置申请有效期为3天
-            { expireAfterSeconds: 1000 * 60 * 60 * 24 * 3 }
-          );
         },
       ],
     });
@@ -150,8 +142,8 @@ friendApi
    * @todo 添加打招呼消息
    */
   .post('/add', (request, response) => {
-    const { friend, message, uid } = request.body.data as ApplyFields;
-    const fields = ['friend', 'nickname', 'icon'];
+    const { applicant, respondent } = request.body.data as UserApplyCollection;
+    const fields = ['applicant', 'respondent'];
     useApiHandler({
       response,
       required: {
@@ -160,8 +152,8 @@ friendApi
         check: [{ type: 'String', fields }],
       },
       middleware: [
-        async () => await addToEach(response, uid, friend),
-        async () => await addToEach(response, friend, uid),
+        async () => await addToEach(response, applicant, respondent),
+        async () => await addToEach(response, respondent, applicant),
       ],
     });
   })
