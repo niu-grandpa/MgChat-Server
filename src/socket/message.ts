@@ -64,12 +64,7 @@ function messageService(io: Server, socket: Socket) {
     io.emit('send-message-ok', token);
   };
 
-  const onSaveMessage = () => {
-    socket.emit('');
-  };
-
   socket.on('message', onMessage);
-  socket.on('save-message', onSaveMessage);
 
   /**
    * 好友聊天

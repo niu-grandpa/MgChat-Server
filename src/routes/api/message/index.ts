@@ -1,8 +1,9 @@
 import express from 'express';
-import { useDbCrud } from '../../../hooks';
+import { useApiHandler, useDbCrud } from '../../../hooks';
+import { CollectionName, MessageCollection } from '../../../types';
 
 const MessageApi = express.Router();
-const { read, create, update } = useDbCrud();
+const { read, update } = useDbCrud();
 
 MessageApi
   /** 查询某用户与其他人的所有聊天记录 */
@@ -12,7 +13,32 @@ MessageApi
   .post('/have-read', (request, response) => {})
 
   /**保存消息记录 */
-  .post('/save', (request, response) => {})
+  .post('/save', (request, response) => {
+    const { uid, friend, icon, nickname, logs } = request.body
+      .data as MessageCollection;
+    const fields = ['uid', 'friend', 'icon', 'nickname'];
+
+    useApiHandler({
+      response,
+      required: {
+        target: request.body.dat,
+        must: [...fields, 'logs'],
+        check: [
+          { type: 'String', fields },
+          { type: 'Array', fields: ['logs'] },
+        ],
+      },
+      middleware: [
+        async () => {
+          update({
+            table: CollectionName.MESSAGE_LOGS,
+            filter: { $and: [{ uid }, { friend }] },
+            update: { icon, nickname, $push: { logs: logs[0] } },
+          });
+        },
+      ],
+    });
+  })
 
   /**
    * 删除用户某条消息记录
