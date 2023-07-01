@@ -1,6 +1,7 @@
 import express from 'express';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { CollectionName, MessageCollection } from '../../../types';
+import { verifyToken } from '../../../utils';
 
 const MessageApi = express.Router();
 const { read, update } = useDbCrud();
@@ -14,14 +15,16 @@ MessageApi
 
   /**保存消息记录 */
   .post('/save', (request, response) => {
-    const { uid, friend, icon, nickname, logs } = request.body
-      .data as MessageCollection;
+    const { uid, friend, icon, nickname, logs } = verifyToken(
+      request.body.data as string
+    ) as unknown as MessageCollection;
+
     const fields = ['uid', 'friend', 'icon', 'nickname'];
 
     useApiHandler({
       response,
       required: {
-        target: request.body.dat,
+        target: request.body.data,
         must: [...fields, 'logs'],
         check: [
           { type: 'String', fields },

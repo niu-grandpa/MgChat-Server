@@ -1,8 +1,6 @@
-import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
-import { SECRET_KEY } from '../private';
 import { MessageType } from '../types';
-import { createHash } from '../utils';
+import { createHash, signData, verifyToken } from '../utils';
 
 // type ReceivedData = {
 //   role: MessageRole;
@@ -49,7 +47,11 @@ function messageService(io: Server, socket: Socket) {
    * 只监听message方法进行消息中转收发，方便使用postman测试
    * 更完善的程序在后面的注释掉了
    */
-  const onMessage = ({ type, from, to, ...rest }: ReceivedDataType) => {
+  const onMessage = (data: string) => {
+    const { type, from, to, ...rest } = verifyToken(
+      data
+    ) as unknown as ReceivedDataType;
+
     const payload: SendMessage = {
       type,
       from,
@@ -59,9 +61,9 @@ function messageService(io: Server, socket: Socket) {
       createTime: Date.now(),
     };
     // 为确保数据安全将其加密传输
-    const token = jwt.sign(payload, SECRET_KEY);
-    io.emit('receive-message', token);
-    io.emit('send-message-ok', token);
+    const decode = signData(payload);
+    io.emit('receive-message', decode);
+    io.emit('send-message-ok', decode);
   };
 
   socket.on('message', onMessage);
