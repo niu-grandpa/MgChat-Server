@@ -14,16 +14,16 @@ import { createHash, signData, verifyToken } from '../utils';
 
 type SendMessage = {
   type: MessageType;
-  from: string;
-  to: string;
-  cid: string;
+  icon: string;
+  nickname: string;
   detail: {
-    icon: string;
-    nickname: string;
+    from: string;
+    to: string;
+    cid: string;
     content: string;
     image: string;
+    createTime: number;
   };
-  createTime: number;
 };
 
 type ReceivedDataType = {
@@ -48,17 +48,15 @@ function messageService(io: Server, socket: Socket) {
    * 更完善的程序在后面的注释掉了
    */
   const onMessage = (data: string) => {
-    const { type, from, to, ...rest } = verifyToken(
+    const { type, icon, nickname, ...rest2 } = verifyToken(
       data
     ) as unknown as ReceivedDataType;
 
     const payload: SendMessage = {
       type,
-      from,
-      to,
-      detail: rest,
-      cid: getHash(),
-      createTime: Date.now(),
+      icon,
+      nickname,
+      detail: { ...rest2, cid: getHash(), createTime: Date.now() },
     };
     // 为确保数据安全将其加密传输
     const decode = signData(payload);
