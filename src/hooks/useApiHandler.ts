@@ -55,21 +55,35 @@ async function useApiHandler({
   }
 
   // 执行函数中间件
-  while (middleware.length) {
-    const fn = middleware.shift()!;
-    let res: boolean | unknown;
-
-    try {
+  try {
+    let result: boolean | unknown = true,
+      i = 0;
+    for (const fn of middleware) {
+      i++;
       if (isAsyncFunction(fn)) {
-        res = await fn();
+        result = await fn();
       } else {
-        res = fn();
+        result = fn();
       }
-    } catch (e) {
-      console.error(`[useApiHandler] error: ${e}`);
+      if (result === false) {
+        console.log(
+          `[useApiHandler] info: The ${fn.name} function terminated the execution`
+        );
+        break;
+      }
+      if (result !== undefined) {
+        const nextFn = middleware[i];
+        if (nextFn) {
+          isAsyncFunction(nextFn)
+            ? (middleware[i] = async () => await nextFn(result))
+            : (middleware[i] = () => nextFn(result));
+        }
+      }
     }
-
-    if (res === false) break;
+  } catch (e) {
+    console.error(`[useApiHandler] middleware error: ${e}`);
+    response.status(500);
+    response.send(wrapperResult(null, ResponseCode.ERROR));
   }
 }
 

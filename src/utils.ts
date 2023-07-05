@@ -14,7 +14,7 @@ export const wrapperResult = (data: any, status: ResponseCode) => {
 export const signData = (
   payload: any,
   key?: 'password',
-  expiresIn?: number
+  expiresIn?: string | number
 ) => {
   const token = jwt.sign(
     payload,
@@ -31,7 +31,7 @@ export const verifyToken = <T>(token: string, key?: 'password') => {
     key === 'password' ? PWD_SECRET_KEY : SECRET_KEY,
     (err, decoded) => {
       if (err) {
-        console.error(err.message);
+        console.log('JWT验证失败:', err);
         return;
       }
       res = decoded as T;

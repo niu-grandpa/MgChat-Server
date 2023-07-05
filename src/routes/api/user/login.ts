@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import express, { Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { useApiHandler, useDbCrud } from '../../../hooks';
@@ -71,9 +70,7 @@ loginApi
     const fields = ['uid', 'password'];
     const { uid, password: pwdToken } = request.body.data as LoginWithPwd;
 
-    let newToken = '',
-      // @ts-ignore 解密密码
-      { password } = verifyToken(pwdToken, 'password')!;
+    let { password } = verifyToken<LoginWithPwd>(pwdToken, 'password')!;
 
     useApiHandler({
       response,
@@ -104,15 +101,14 @@ loginApi
             return false;
           }
           // token是否需要重置
-          newToken = isRestToken(token, timeInfo.expiredTime, {
+          return isRestToken(token, timeInfo.expiredTime, {
             uid,
             password,
           });
         },
-        async () => {
+        async (token: Promise<string>) => {
           // 更新用户状态，登录时间
-          await userUpdate(response, { uid }, newToken);
-          // todo 通知其他好友已上线
+          await userUpdate(response, { uid }, await token);
         },
       ],
     });
@@ -125,7 +121,7 @@ loginApi
   .post('/login-with-phone', (request, response) => {
     const { phoneNumber, code } = request.body.data as LoginWithPhone;
     const fields = ['phoneNumber', 'code'];
-    let newToken = '';
+
     useApiHandler({
       response,
       verifyCaptcha: { phoneNumber, code },
@@ -151,14 +147,13 @@ loginApi
           if (isOnline(status, response) === ResponseCode.REPEAT_LOGIN) {
             return false;
           }
-          newToken = isRestToken(token, timeInfo.expiredTime, {
+          return isRestToken(token, timeInfo.expiredTime, {
             phoneNumber,
             code,
           });
         },
-        async () => {
-          await userUpdate(response, { phoneNumber }, newToken);
-          // todo 通知其他好友已上线
+        async (token: Promise<string>) => {
+          await userUpdate(response, { phoneNumber }, await token);
         },
       ],
     });
@@ -167,27 +162,31 @@ loginApi
 const userUpdate = async (
   response: Response,
   filter: object,
-  newToken: string
+  token: string
 ) => {
   const newData = {
     status: UserStatus.ONLINE,
     'timeInfo.loginTime': Date.now(),
   };
 
-  if (newToken !== '') {
-    newData['token'] = newToken;
-    newData['timeInfo.expiredTime'] = (
-      verifyToken(newToken, 'password') as unknown as JwtPayload
-    ).exp;
+  if (token !== '') {
+    newData['token'] = token;
+    try {
+      newData['timeInfo.expiredTime'] = (
+        verifyToken(token, 'password') as unknown as JwtPayload
+      ).exp;
+      await update({
+        table: CollectionName.USERS,
+        filter,
+        update: { $set: newData },
+      });
+      await read({ table: CollectionName.USERS, filter, response });
+    } catch (error) {
+      console.log(error);
+    }
+  } else {
+    response.send(wrapperResult(null, ResponseCode.EXPIRED));
   }
-
-  await update({
-    table: CollectionName.USERS,
-    filter,
-    update: { $set: newData },
-  });
-
-  await read({ table: CollectionName.USERS, filter, response });
 };
 
 /**
@@ -204,7 +203,7 @@ const isRestToken = (
   }>
 ) => {
   if (!token || expiredTime < Date.now()) {
-    return signData(payload, 'password', dayjs().add(1, 'month').valueOf());
+    return signData(payload, 'password', '30d');
   }
   return '';
 };
