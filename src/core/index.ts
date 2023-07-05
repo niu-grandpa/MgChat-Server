@@ -15,8 +15,8 @@ for (let i = 1; i <= userMaxLevel; i++) {
   if (i <= 3) levelDays[i] = 7;
   // 4-7等级所需升级天数: 14
   if (i >= 4 && i <= 7) levelDays[i] = 14;
-  // 8-12等级所需升级天数: 21
-  if (i >= 8) levelDays[i] = 21;
+  // 8-12等级所需升级天数: 28
+  if (i >= 8) levelDays[i] = 28;
 }
 
 /**
@@ -32,10 +32,10 @@ export function settlementUserLevelAndCredit(data: UserCollection) {
   let currentActiveHours = dayjs(logoutTime).diff(dayjs(loginTime), 'h');
   let currentActiveMinutes = dayjs(logoutTime).diff(dayjs(loginTime), 'm');
 
-  // 当前活跃时间每达到整的1个小时阶段，每次加6积分
+  // 当前活跃时间每达到整的1个小时阶段，每次加5积分
   if (currentActiveHours >= 1) {
     let t = currentActiveHours;
-    while (t--) data.credit += 6;
+    while (t--) data.credit += 5;
   } else if (currentActiveMinutes > 0) {
     // 登录一个小时之内的按分钟转成小时
     currentActiveHours = currentActiveMinutes / 60;
@@ -63,8 +63,8 @@ export function settlementUserLevelAndCredit(data: UserCollection) {
       if (upgradeDays >= limit) {
         data.level += 1;
 
-        // 升级一次+100积分
-        data.credit += 100;
+        // 升级一次+50积分
+        data.credit += 50;
 
         // 如果不是为0，说明当前攒的升级天数有多出来的，要作为下一次升级的初始天数
         // 例如需要攒7天的升级天数，但是当前结算后得到的可消耗升级天数为9，

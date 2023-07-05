@@ -54,7 +54,7 @@ loginApi
           }
           // !检查token是否已过期，由客户端实现
           // 检查是否已在线
-          if (isOnline(data.status, response) === 7) {
+          if (isOnline(data.status, response) === ResponseCode.REPEAT_LOGIN) {
             return false;
           }
         },
@@ -71,9 +71,10 @@ loginApi
     const fields = ['uid', 'password'];
     const { uid, password: pwdToken } = request.body.data as LoginWithPwd;
 
-    let newToken = '';
-    // @ts-ignore 解密密码
-    let { password } = verifyToken(pwdToken, 'password')!;
+    let newToken = '',
+      // @ts-ignore 解密密码
+      { password } = verifyToken(pwdToken, 'password')!;
+
     useApiHandler({
       response,
       required: {
@@ -92,14 +93,14 @@ loginApi
             response.send(wrapperResult(null, ResponseCode.NO_ACCOUNT));
             return false;
           }
-          const { timeInfo, token, status } = data;
+          const { timeInfo, token, status, password: curPwd } = data;
           // 密码是否一致
-          if (password !== password) {
+          if (password !== curPwd) {
             response.send(wrapperResult(null, ResponseCode.WRONG_PWD));
             return false;
           }
           // 是否已在线
-          if (isOnline(status, response) === 7) {
+          if (isOnline(status, response) === ResponseCode.REPEAT_LOGIN) {
             return false;
           }
           // token是否需要重置
@@ -147,7 +148,7 @@ loginApi
 
           const { timeInfo, token, status } = data;
 
-          if (isOnline(status, response) === 7) {
+          if (isOnline(status, response) === ResponseCode.REPEAT_LOGIN) {
             return false;
           }
           newToken = isRestToken(token, timeInfo.expiredTime, {
@@ -176,7 +177,7 @@ const userUpdate = async (
   if (newToken !== '') {
     newData['token'] = newToken;
     newData['timeInfo.expiredTime'] = (
-      verifyToken(newToken) as unknown as JwtPayload
+      verifyToken(newToken, 'password') as unknown as JwtPayload
     ).exp;
   }
 
@@ -203,7 +204,7 @@ const isRestToken = (
   }>
 ) => {
   if (!token || expiredTime < Date.now()) {
-    return signData(payload, undefined, dayjs().add(1, 'month').valueOf());
+    return signData(payload, 'password', dayjs().add(1, 'month').valueOf());
   }
   return '';
 };
@@ -212,7 +213,7 @@ const isOnline = (status: UserStatus, response: Response) => {
   if (status === UserStatus.ONLINE) {
     response.status(200);
     response.send(wrapperResult(null, ResponseCode.REPEAT_LOGIN));
-    return 7;
+    return ResponseCode.REPEAT_LOGIN;
   } else {
     return false;
   }
