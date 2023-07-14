@@ -24,7 +24,7 @@ async function useApiHandler({
       for (const key of must) {
         if (!(key in target)) {
           pass = false;
-          response.status(500);
+          response.status(400);
           response.send(`接口缺少参数 "${key}", 必填参数项: [${must}]`);
           break;
         }
@@ -39,7 +39,7 @@ async function useApiHandler({
       for (const field of map[type]) {
         if (target[field] && typeof target[field] !== type.toLowerCase()) {
           pass = false;
-          response.status(500);
+          response.status(400);
           response.send(`参数字段类型错误："${field}" 的类型应为 "${type}"`);
           break;
         }

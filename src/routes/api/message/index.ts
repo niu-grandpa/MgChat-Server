@@ -1,47 +1,24 @@
 import express from 'express';
-import { useApiHandler, useDbCrud } from '../../../hooks';
-import { CollectionName, MessageCollection } from '../../../types';
-import { verifyToken } from '../../../utils';
+import { useDbCrud } from '../../../hooks';
+import { CollectionName } from '../../../types';
 
 const MessageApi = express.Router();
 const { read, update } = useDbCrud();
 
 MessageApi
-  /** 查询某用户与其他人的所有聊天记录 */
-  .get('/get', async (request, response) => {})
+  /**
+   * 获取用户与所有好友的聊天数据
+   */
+  .get('/sync-friend-message', async (request, response) => {
+    const { uid } = request.query;
+    await read(
+      { table: CollectionName.MESSAGE_LOGS, filter: { uid }, response },
+      'findAll'
+    );
+  })
 
   /**设置消息已读*/
   .post('/have-read', (request, response) => {})
-
-  /**保存消息记录 */
-  .post('/save', (request, response) => {
-    const { uid, friend, icon, nickname, logs } = verifyToken(
-      request.body.data as string
-    ) as unknown as MessageCollection;
-
-    const fields = ['uid', 'friend', 'icon', 'nickname'];
-
-    useApiHandler({
-      response,
-      required: {
-        target: request.body.data,
-        must: [...fields, 'logs'],
-        check: [
-          { type: 'String', fields },
-          { type: 'Array', fields: ['logs'] },
-        ],
-      },
-      middleware: [
-        async () => {
-          update({
-            table: CollectionName.MESSAGE_LOGS,
-            filter: { $and: [{ uid }, { friend }] },
-            update: { icon, nickname, $push: { logs: logs[0] } },
-          });
-        },
-      ],
-    });
-  })
 
   /**
    * 删除用户某条消息记录

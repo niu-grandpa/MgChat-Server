@@ -1,6 +1,5 @@
 import express, { Response } from 'express';
 import { Document, Filter } from 'mongodb';
-import { userMaxLevel } from '../../../core/index';
 import { useApiHandler, useDbCrud } from '../../../hooks';
 import { CollectionName, UserGender, UserStatus } from '../../../types';
 import {
@@ -54,7 +53,6 @@ friendApi
     const { keywords, ageRange, gender, status } =
       request.query as unknown as QueryFields;
 
-    let filter: Filter<Document> = { $and: [] };
     const extra = {
       age: {},
       gender: {},
@@ -65,15 +63,13 @@ friendApi
       response,
       middleware: [
         () => {
-          if (gender !== undefined) {
-            extra.gender = { gender };
-          }
-          if (status !== undefined) {
-            extra.status = { status };
-          }
+          let filter: Filter<Document> = { $and: [] };
+
+          if (gender !== undefined) extra.gender = { gender };
+          if (status !== undefined) extra.status = { status };
           if (ageRange && ageRange.length) {
             const [min, max] = ageRange;
-            extra.age = { age: { $gte: min, $lte: max ?? userMaxLevel } };
+            extra.age = { age: { $gte: min ?? 0, $lte: max ?? 9999 } };
           }
 
           const extraFlat = { ...extra.age, ...extra.gender, ...extra.status };
@@ -91,13 +87,15 @@ friendApi
               { ...extraFlat, nickname: { $regex: new RegExp(keywords) } },
             ];
           }
+
+          return filter;
         },
-        async () => {
+        async (filter: Promise<Filter<Document>>) => {
           await read(
             {
               table: CollectionName.USERS,
               response,
-              filter,
+              filter: await filter,
             },
             'findAll'
           );
@@ -112,14 +110,21 @@ friendApi
    * 客户端定时读取申请表中自己的数据，监听是否有新增加账号
    */
   .post('/new-apply', (request, response) => {
-    const { applicant, respondent, ...rest } = request.body
-      .data as UserApplyCollection;
-    const fields = ['applicant', 'respondent', 'gender', 'nickname', 'icon'];
+    const { from, to, ...rest } = request.body.data as UserApplyCollection;
+    const fields = [
+      'from',
+      'to',
+      'icon',
+      'alias',
+      'group',
+      'message',
+      'nickname',
+    ];
     useApiHandler({
       response,
       required: {
         target: request.body.data,
-        must: fields,
+        must: ['from', 'to', 'icon', 'nickname'],
         check: [{ type: 'String', fields }],
       },
       middleware: [
@@ -127,8 +132,8 @@ friendApi
           await update({
             table: CollectionName.USER_APPLICATION,
             response,
-            filter: { respondent },
-            update: { $set: { applicant, respondent, ...rest } },
+            filter: { to },
+            update: { $set: { from, to, ...rest } },
           });
         },
       ],
@@ -142,8 +147,8 @@ friendApi
    * @todo 添加打招呼消息
    */
   .post('/add', (request, response) => {
-    const { applicant, respondent } = request.body.data as UserApplyCollection;
-    const fields = ['applicant', 'respondent'];
+    const { from, to } = request.body.data as UserApplyCollection;
+    const fields = ['from', 'to'];
     useApiHandler({
       response,
       required: {
@@ -152,8 +157,8 @@ friendApi
         check: [{ type: 'String', fields }],
       },
       middleware: [
-        async () => await addToEach(response, applicant, respondent),
-        async () => await addToEach(response, respondent, applicant),
+        async () => await addToEach(response, from, to),
+        async () => await addToEach(response, to, from),
       ],
     });
   })
